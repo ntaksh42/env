@@ -611,13 +611,14 @@ function cxyolo {
 # §6 Environment setup helpers
 # ---------------------------------------------------------------------------
 
-# Tool catalog (data-driven). Backend: winget | msstore | pip | psmodule
+# Tool catalog (data-driven). Backend: winget | msstore | pip | psmodule | script
 $script:DevTools = @(
     @{ Name='Files';             Backend='winget';   Id='FilesCommunity.Files' }
     @{ Name='Everything';        Backend='winget';   Id='voidtools.Everything' }
     @{ Name='EverythingToolbar'; Backend='winget';   Id='stnkl.EverythingToolbar' }
     @{ Name='PC Manager';        Backend='msstore';  Id='9PM860492SZD' }
     @{ Name='Flow Launcher';     Backend='winget';   Id='Flow-Launcher.Flow-Launcher' }
+    @{ Name='Waypoint';          Backend='script';   Id='https://raw.githubusercontent.com/ntaksh42/waypoint/main/installer/install.ps1'; Path=(Join-Path $env:LOCALAPPDATA 'Programs\waypoint\waypoint.exe') }
     @{ Name='starship';          Backend='winget';   Id='Starship.Starship';     Cmd='starship' }
     @{ Name='zoxide';            Backend='winget';   Id='ajeetdsouza.zoxide';   Cmd='zoxide' }
     @{ Name='eza';               Backend='winget';   Id='eza-community.eza';     Cmd='eza' }
@@ -657,6 +658,7 @@ function Test-ToolInstalled {
     switch ($Tool.Backend) {
         'psmodule' { return [bool](Get-Module -ListAvailable -Name $Tool.Id) }
         'pip'      { return (Test-Cmd $Tool.Cmd) }
+        'script'   { return (Test-Path -LiteralPath $Tool.Path -PathType Leaf) }
         default {
             if ($Tool.Cmd -and (Test-Cmd $Tool.Cmd)) { return $true }
             $listed = winget list --id $Tool.Id --exact 2>$null | Select-String -SimpleMatch $Tool.Id
@@ -706,6 +708,11 @@ function Install-DevTools {
                     else { python -m pip install --user $t.Id }
                 }
                 'psmodule' { Install-Module $t.Id -Scope CurrentUser -Force -AcceptLicense }
+                'script'   {
+                    $installerPath = Join-Path $env:TEMP 'waypoint-install.ps1'
+                    Invoke-WebRequest -Uri $t.Id -OutFile $installerPath
+                    & $installerPath -Silent
+                }
             }
             $ok = $true
         } catch {
