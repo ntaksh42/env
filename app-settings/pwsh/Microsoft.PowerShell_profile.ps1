@@ -615,9 +615,7 @@ function cxyolo {
 $script:DevTools = @(
     @{ Name='Files';             Backend='winget';   Id='FilesCommunity.Files' }
     @{ Name='Everything';        Backend='winget';   Id='voidtools.Everything' }
-    @{ Name='EverythingToolbar'; Backend='winget';   Id='stnkl.EverythingToolbar' }
     @{ Name='PC Manager';        Backend='msstore';  Id='9PM860492SZD' }
-    @{ Name='Flow Launcher';     Backend='winget';   Id='Flow-Launcher.Flow-Launcher' }
     @{ Name='Waypoint';          Backend='script';   Id='https://raw.githubusercontent.com/ntaksh42/waypoint/main/installer/install.ps1'; Path=(Join-Path $env:LOCALAPPDATA 'Programs\waypoint\waypoint.exe') }
     @{ Name='starship';          Backend='winget';   Id='Starship.Starship';     Cmd='starship' }
     @{ Name='zoxide';            Backend='winget';   Id='ajeetdsouza.zoxide';   Cmd='zoxide' }
