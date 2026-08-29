@@ -1,0 +1,134 @@
+// 配置先: ~/.config/ccstatusline/settings.json
+// 反映方法: 手動コピー
+{
+  "version": 3,
+  "lines": [
+    [
+      {
+        "id": "1",
+        "type": "model",
+        "color": "brightCyan"
+      },
+      {
+        "id": "2",
+        "type": "separator"
+      },
+      {
+        "id": "22066bbb-2375-4552-a1e3-7dac266e7b22",
+        "type": "thinking-effort",
+        "color": "brightCyan"
+      },
+      {
+        "id": "1f147262-0256-4803-9346-7c34a49480ba",
+        "type": "separator"
+      },
+      {
+        "id": "144bcb49-a281-489a-a6d8-2d61d4825d9e",
+        "type": "context-percentage",
+        "color": "brightCyan"
+      },
+      {
+        "id": "ba1fc615-417b-407b-ae79-78751f29a656",
+        "type": "separator"
+      },
+      {
+        "id": "786bd9ee-b0bd-46f1-b504-0611e663a947",
+        "type": "claude-account-email",
+        "color": "brightYellow"
+      }
+    ],
+    [
+      {
+        "id": "3a9f648c-13c6-4479-9f4d-42b6888e0d1c",
+        "type": "current-working-dir"
+      },
+      {
+        "id": "5cd0c9b6-3bb2-4fa3-87cc-44e568351167",
+        "type": "separator"
+      },
+      {
+        "id": "1326036d-1c52-4f16-bce7-a1152d8c7c5f",
+        "type": "git-branch",
+        "color": "blue"
+      },
+      {
+        "id": "3a73356a-b683-4ff0-ba86-6b27a94c3f4f",
+        "type": "separator"
+      },
+      {
+        "id": "0c43014b-6278-4e3c-b61e-f173de6234c4",
+        "type": "git-ahead-behind",
+        "color": "blue"
+      },
+      {
+        "id": "36213d9a-5660-4a28-aebd-41a0fa38d2b5",
+        "type": "separator"
+      },
+      {
+        "id": "1ce355ca-cde8-4c68-97b5-2965a94e6c2a",
+        "type": "git-changes",
+        "color": "blue"
+      },
+      {
+        "id": "93028155-cb00-4de0-93e5-c832e67bc8ce",
+        "type": "separator"
+      },
+      {
+        "id": "f3051465-607a-42c9-84d7-023fbcb220ee",
+        "type": "git-review",
+        "color": "blue"
+      }
+    ],
+    [
+      {
+        "id": "23038c50-52cd-4b4f-a49a-b09aa2481766",
+        "type": "session-usage"
+      },
+      {
+        "id": "be4cb958-9049-414b-a403-abfaa3655f14",
+        "type": "separator"
+      },
+      {
+        "id": "2c8d3e08-55ea-406d-bd14-7fcb329fe5bc",
+        "type": "reset-timer"
+      },
+      {
+        "id": "c46ebfdd-e08d-4838-a349-1c0a4161522c",
+        "type": "separator"
+      },
+      {
+        "id": "07d71bc4-a8b1-4b5a-ac6c-864757b0e8a4",
+        "type": "weekly-usage"
+      },
+      {
+        "id": "532dbe0a-ca3e-4aad-8f8c-ad1deeb59cf3",
+        "type": "separator"
+      },
+      {
+        "id": "24e80e19-a75d-4b36-aae5-0db18e2b56a7",
+        "type": "weekly-reset-timer"
+      }
+    ]
+  ],
+  "flexMode": "full-minus-40",
+  "compactThreshold": 60,
+  "colorLevel": 2,
+  "defaultPaddingSide": "both",
+  "inheritSeparatorColors": false,
+  "globalBold": false,
+  "gitCacheTtlSeconds": 5,
+  "minimalistMode": false,
+  "powerline": {
+    "enabled": false,
+    "separators": [
+      ""
+    ],
+    "separatorInvertBackground": [
+      false
+    ],
+    "startCaps": [],
+    "endCaps": [],
+    "autoAlign": false,
+    "continueThemeAcrossLines": false
+  }
+}

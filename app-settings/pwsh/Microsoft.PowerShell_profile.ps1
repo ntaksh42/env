@@ -162,8 +162,27 @@ function gb  { git branch @args }
 function gd  { git diff @args }
 function gds { git diff --staged @args }
 function gp  { git push @args }
-function gpl { git pull @args }
-function gf  { git fetch --all --prune @args }
+function gpf { git push --force-with-lease @args }
+
+# stash shortcuts
+function gsta { git stash push @args }
+function gstp { git stash pop @args }
+function gstl { git stash list @args }
+
+# fetch/pull guarded against a Windows/NTFS gotcha: two refs differing only by
+# case (e.g. branch "d" vs "D") share one loose-ref filename, so a plain fetch
+# can silently clobber one with the other. Packing refs before/after moves
+# them into packed-refs (a single text file, immune to filesystem case-folding).
+function gf {
+    git pack-refs --all
+    git fetch --all --prune @args
+    git pack-refs --all
+}
+function gpl {
+    git pack-refs --all
+    git pull @args
+    git pack-refs --all
+}
 
 # Commit with a message (message required)
 function gcm {
@@ -281,6 +300,32 @@ function git-clean-branches {
     $merged | ForEach-Object { Write-Host "  $_" }
     if ((Read-Host 'Proceed? (y/N)') -notmatch '^(y|yes)$') { Write-Host 'Aborted.'; return }
     $merged | ForEach-Object { git branch -d $_ }
+}
+
+# ローカルを完全にきれいな状態へ戻す: 追跡ファイルの変更を破棄し (reset --hard)、
+# 未追跡・.gitignore 対象のファイル/ディレクトリも削除する (clean -ffdx)。
+# 削除対象をプレビューして確認を取ってから実行 (-Force で確認省略)。
+function git-nuke {
+    [CmdletBinding()]
+    param(
+        [string]$Ref = 'HEAD',
+        [switch]$Force
+    )
+    $dirty = git status --porcelain
+    $toClean = @(git clean -ffdxn)
+    if (-not $dirty -and $toClean.Count -eq 0) {
+        Write-Host 'Already clean.' -ForegroundColor Green
+        return
+    }
+
+    Write-Host "This will 'git reset --hard $Ref' and remove:" -ForegroundColor Cyan
+    $toClean | ForEach-Object { Write-Host "  $_" }
+    if (-not $Force) {
+        if ((Read-Host 'Proceed? (y/N)') -notmatch '^(y|yes)$') { Write-Host 'Aborted.'; return }
+    }
+
+    git reset --hard $Ref
+    git clean -ffdx
 }
 
 # このディレクトリと直下のサブディレクトリにある git リポジトリを gita に登録。
@@ -775,7 +820,9 @@ $script:ProfileHelp = [ordered]@{
         @{ Cmd='ga / gaa';         Desc='git add / git add -A' }
         @{ Cmd='gb';               Desc='git branch' }
         @{ Cmd='gd / gds';         Desc='git diff / git diff --staged' }
-        @{ Cmd='gp / gpl / gf';    Desc='git push / pull / fetch --all --prune' }
+        @{ Cmd='gp / gpf';         Desc='git push / push --force-with-lease' }
+        @{ Cmd='gpl / gf';         Desc='git pull / fetch --all --prune (大文字小文字違いブランチの ref 衝突対策込み)' }
+        @{ Cmd='gsta/gstp/gstl';   Desc='git stash push/pop/list' }
         @{ Cmd='gcm <msg>';        Desc='git commit -m' }
         @{ Cmd='gco [branch]';     Desc='checkout (引数なしは fzf で選択)' }
         @{ Cmd='lg';               Desc='lazygit (あれば)' }
@@ -786,6 +833,7 @@ $script:ProfileHelp = [ordered]@{
         @{ Cmd='clean-pull-all';   Desc='gita 全リポジトリを掃除して pull (-Fallback で切替先指定)' }
         @{ Cmd='git-switch';       Desc='fzf でブランチ切替 (無ければ origin から作成)' }
         @{ Cmd='git-clean-branches'; Desc='マージ済みローカルブランチを一括削除' }
+        @{ Cmd='git-nuke';         Desc='reset --hard + clean -ffdx で完全クリーン (-Ref/-Force)' }
         @{ Cmd='gita-scan [path]'; Desc='直下の git リポジトリを gita に一括登録' }
     )
     'Visual Studio / build' = @(
