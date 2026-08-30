@@ -590,6 +590,16 @@ function killport {
     }
 }
 
+# 司令塔プロンプトはプロファイルと同じ場所の prompts/ に置く。
+# 見つからない場合でも起動を壊さないよう、委譲方針の最小版にフォールバックする。
+function script:Get-ClaudeOrchestPrompt {
+    $promptPath = Join-Path (Split-Path -Parent $script:DotfilesProfilePath) 'prompts\orchest.md'
+    if (Test-Path -LiteralPath $promptPath) {
+        return (Get-Content -LiteralPath $promptPath -Raw)
+    }
+    'あなたは司令塔として俯瞰・立案・検証を担い、実装は implementer サブエージェントに委譲し、成果物は evaluator サブエージェントに検証させる。委譲プロンプトは自己完結させること。'
+}
+
 # 司令塔/実行を分離して claude 起動: 立案・俯瞰は上位モデル、実行はサブエージェント
 function script:Invoke-ClaudeOrchest {
     param(
@@ -597,15 +607,7 @@ function script:Invoke-ClaudeOrchest {
         [Parameter(Mandatory)][string]$SubagentModel,
         [object[]]$Rest
     )
-    $orchestPrompt = @'
-あなたは司令塔として俯瞰・立案・検証を担い、実行はサブエージェントに委譲する。
-
-- 実装・修正の委譲先には implementer サブエージェントを使う（報告形式と作法が定義済み）。
-- 委譲プロンプトは自己完結させる: 対象ファイル、背景、期待結果、完了条件、報告形式（変更差分と検証結果のみ簡潔に）を必ず含める。サブエージェントは会話履歴を参照できない。
-- 独立したタスクは 1 メッセージで並列に委譲する。
-- 成果物を受領したら evaluator サブエージェントに変更差分と完了条件を渡して検証させる。不合格なら修正点を具体化して implementer に再委譲する。最終判断は evaluator の報告を確認して自分で行う。
-- 例外: 2〜3 ステップで終わる小さな作業、設計判断、あいまいな要件の解釈は委譲せず自分で行う。
-'@
+    $orchestPrompt = Get-ClaudeOrchestPrompt
     $prev = $env:CLAUDE_CODE_SUBAGENT_MODEL
     $env:CLAUDE_CODE_SUBAGENT_MODEL = $SubagentModel
     try {
@@ -616,25 +618,60 @@ function script:Invoke-ClaudeOrchest {
     }
 }
 function fable-orchest      { Invoke-ClaudeOrchest 'claude-fable-5'  'claude-sonnet-5' $args }
-function fable-orchest-opus { Invoke-ClaudeOrchest 'claude-fable-5'  'claude-opus-4-8' $args }
-function opus-orchest       { Invoke-ClaudeOrchest 'claude-opus-4-8' 'claude-sonnet-5' $args }
+function fable-orchest-opus { Invoke-ClaudeOrchest 'claude-fable-5'  'claude-opus-5' $args }
+function opus-orchest       { Invoke-ClaudeOrchest 'claude-opus-5'   'claude-sonnet-5' $args }
 function fable-orchest-plan { Invoke-ClaudeOrchest 'claude-fable-5'  'claude-sonnet-5' (@('--permission-mode', 'plan') + $args) }
 Set-Alias ccf  fable-orchest
 Set-Alias ccfo fable-orchest-opus
 Set-Alias cco  opus-orchest
 Set-Alias ccfp fable-orchest-plan
 
+# 司令塔プロンプトを注入しない素の起動。委譲構成が不要な通常作業向け。
+function ccop { claude --model claude-opus-5 @args }
+function ccp  { claude --model claude-opus-5 --permission-mode plan @args }
+
+# 直近の会話を継続 / セッションを選んで再開
+function ccc { claude --continue @args }
+function ccr { claude --resume @args }
+
+# --- codex ---
+# 既定は ~/.codex/config.toml (on-request / workspace-write)。
+# 以下は安全度と推論強度を起動時に切り替えるためのプリセット。
+function cx    { codex @args }
+function cxr   { codex -s read-only -a untrusted @args }
+function cxa   { codex -a never -s workspace-write @args }
+function cxh   { codex -c model_reasoning_effort="high" @args }
+function cxrev { codex review @args }
+
+# 直近セッションを継続 / セッションを選んで再開
+function cxc { codex resume --last @args }
+function cxs { codex resume @args }
+
+# サンドボックスを外す。承認は残るので実行前に必ず目視が入る。
+function cxfa { codex -s danger-full-access @args }
+
+# 承認もサンドボックスも無効化する。取り消しの効かない操作がそのまま通るため、
+# 対象ディレクトリを提示して明示的な同意を取ってから起動する。
+function cxyolo {
+    Write-Host "FULL ACCESS: 承認なし・サンドボックスなしで codex を起動します。" -ForegroundColor Red
+    Write-Host "  作業ディレクトリ: $(Get-Location)" -ForegroundColor Yellow
+    $answer = Read-Host "続行するには 'yes' と入力"
+    if ($answer -ne 'yes') { Write-Host "中止しました。" -ForegroundColor Gray; return }
+    codex --dangerously-bypass-approvals-and-sandbox @args
+}
+
 # ---------------------------------------------------------------------------
 # §6 Environment setup helpers
 # ---------------------------------------------------------------------------
 
-# Tool catalog (data-driven). Backend: winget | msstore | pip | psmodule
+# Tool catalog (data-driven). Backend: winget | msstore | pip | psmodule | script
 $script:DevTools = @(
     @{ Name='Files';             Backend='winget';   Id='FilesCommunity.Files' }
     @{ Name='Everything';        Backend='winget';   Id='voidtools.Everything' }
     @{ Name='EverythingToolbar'; Backend='winget';   Id='stnkl.EverythingToolbar' }
     @{ Name='PC Manager';        Backend='msstore';  Id='9PM860492SZD' }
     @{ Name='Flow Launcher';     Backend='winget';   Id='Flow-Launcher.Flow-Launcher' }
+    @{ Name='Waypoint';          Backend='script';   Id='https://raw.githubusercontent.com/ntaksh42/waypoint/main/installer/install.ps1'; Path=(Join-Path $env:LOCALAPPDATA 'Programs\waypoint\waypoint.exe') }
     @{ Name='starship';          Backend='winget';   Id='Starship.Starship';     Cmd='starship' }
     @{ Name='zoxide';            Backend='winget';   Id='ajeetdsouza.zoxide';   Cmd='zoxide' }
     @{ Name='eza';               Backend='winget';   Id='eza-community.eza';     Cmd='eza' }
@@ -646,11 +683,14 @@ $script:DevTools = @(
     @{ Name='gsudo';             Backend='winget';   Id='gerardog.gsudo';        Cmd='gsudo' }
     @{ Name='lazygit';           Backend='winget';   Id='JesseDuffield.lazygit'; Cmd='lazygit' }
     @{ Name='Zed';               Backend='winget';   Id='ZedIndustries.Zed';     Cmd='zed' }
+    @{ Name='VSCode';            Backend='winget';   Id='Microsoft.VisualStudioCode'; Cmd='code' }
+    @{ Name='Python';            Backend='winget';   Id='Python.Python.3.12';    Cmd='python' }
     @{ Name='PSFzf';             Backend='psmodule'; Id='PSFzf' }
     @{ Name='Terminal-Icons';    Backend='psmodule'; Id='Terminal-Icons' }
     @{ Name='gita';              Backend='pip';      Id='gita';                  Cmd='gita' }
     @{ Name='git';               Backend='winget';   Id='Git.Git';               Cmd='git' }
     @{ Name='gh';                Backend='winget';   Id='GitHub.cli';            Cmd='gh' }
+    @{ Name='Azure CLI';         Backend='winget';   Id='Microsoft.AzureCLI';    Cmd='az' }
     @{ Name='fzf';               Backend='winget';   Id='junegunn.fzf';          Cmd='fzf' }
 )
 
@@ -672,6 +712,7 @@ function Test-ToolInstalled {
     switch ($Tool.Backend) {
         'psmodule' { return [bool](Get-Module -ListAvailable -Name $Tool.Id) }
         'pip'      { return (Test-Cmd $Tool.Cmd) }
+        'script'   { return (Test-Path -LiteralPath $Tool.Path -PathType Leaf) }
         default {
             if ($Tool.Cmd -and (Test-Cmd $Tool.Cmd)) { return $true }
             $listed = winget list --id $Tool.Id --exact 2>$null | Select-String -SimpleMatch $Tool.Id
@@ -721,6 +762,11 @@ function Install-DevTools {
                     else { python -m pip install --user $t.Id }
                 }
                 'psmodule' { Install-Module $t.Id -Scope CurrentUser -Force -AcceptLicense }
+                'script'   {
+                    $installerPath = Join-Path $env:TEMP 'waypoint-install.ps1'
+                    Invoke-WebRequest -Uri $t.Id -OutFile $installerPath
+                    & $installerPath -Silent
+                }
             }
             $ok = $true
         } catch {
@@ -946,9 +992,24 @@ $script:ProfileHelp = [ordered]@{
         @{ Cmd='port <n>';         Desc='ポートを使用中のプロセスを表示' }
         @{ Cmd='killport <n>';     Desc='ポートを使用中のプロセスを強制終了' }
         @{ Cmd='fable-orchest / ccf'; Desc='Fable が立案・Sonnet 5 が実行の構成で claude 起動' }
-        @{ Cmd='fable-orchest-opus / ccfo'; Desc='Fable が立案・Opus 4.8 が実行の構成で claude 起動' }
-        @{ Cmd='opus-orchest / cco'; Desc='Opus 4.8 が立案・Sonnet 5 が実行の構成で claude 起動' }
+        @{ Cmd='fable-orchest-opus / ccfo'; Desc='Fable が立案・Opus 5 が実行の構成で claude 起動' }
+        @{ Cmd='opus-orchest / cco'; Desc='Opus 5 が立案・Sonnet 5 が実行の構成で claude 起動' }
         @{ Cmd='fable-orchest-plan / ccfp'; Desc='ccf を plan モードで起動（立案を承認してから実行）' }
+        @{ Cmd='ccop';             Desc='Opus 5 単体で claude 起動（司令塔プロンプトなし）' }
+        @{ Cmd='ccp';              Desc='ccop を plan モードで起動' }
+        @{ Cmd='ccc';              Desc='直近の会話を継続 (claude --continue)' }
+        @{ Cmd='ccr';              Desc='セッションを選んで再開 (claude --resume)' }
+    )
+    'Codex' = @(
+        @{ Cmd='cx';               Desc='codex 素の起動（config.toml の既定に従う）' }
+        @{ Cmd='cxr';              Desc='読み取り専用で起動（調査・コードリーディング向け）' }
+        @{ Cmd='cxa';              Desc='承認なしで自動実行（サンドボックス内に限定）' }
+        @{ Cmd='cxh';              Desc='推論強度 high で起動（設計判断・難しいデバッグ）' }
+        @{ Cmd='cxrev';            Desc='コードレビューを実行 (codex review)' }
+        @{ Cmd='cxc';              Desc='直近セッションを継続 (codex resume --last)' }
+        @{ Cmd='cxs';              Desc='セッションを選んで再開 (codex resume)' }
+        @{ Cmd='cxfa';             Desc='サンドボックスを外して起動（承認は残る）' }
+        @{ Cmd='cxyolo';           Desc='承認・サンドボックスとも無効化（要 yes 確認）' }
     )
     'Dev environment' = @(
         @{ Cmd='Show-DevEnv';      Desc='開発ツールの導入状況を一覧' }

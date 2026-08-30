@@ -92,6 +92,18 @@
       "Bash(powershell.exe:*)",
       "Bash(powershell:*)",
       "Bash(PYTHONIOENCODING=utf-8:*)"
+    ],
+    "deny": [
+      "Edit(//**/.env)",
+      "Edit(//**/.env.*)",
+      "Edit(//**/credentials.json)",
+      "Edit(//**/secrets.json)",
+      "Edit(//**/*.key)",
+      "Edit(//**/*.pem)",
+      "Edit(//**/*.pfx)",
+      "Edit(//**/*.p12)",
+      "Edit(//**/appsettings.Development.json)",
+      "Edit(//**/appsettings.Production.json)"
     ]
   },
   "hooks": {
@@ -110,7 +122,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "powershell.exe -ExecutionPolicy Bypass -File \"{{CLAUDE_DIR}}\\claude-notification.ps1\" -Title \"Claude Code\" -Message \"Your Action Needed\""
+            "command": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File \"{{CLAUDE_DIR}}\\claude-notification.ps1\" -Title \"Claude Code\" -Message \"Your Action Needed\""
           }
         ]
       }

@@ -14,6 +14,40 @@ app-settings/              アプリ設定ファイルのバックアップ
 tools/                     汎用 PowerShell ユーティリティ
 ```
 
+## Git 設定
+
+PowerShell 7 / Git for Windows 向けの共有設定は
+`app-settings/git/.gitconfig` にあります。個人情報や署名鍵、認証 helper は
+公開用の設定から分離し、`~/.gitconfig.local` で管理します。既存の設定が
+ある場合は、それをローカル設定として残してから共有設定を配置します。
+
+```powershell
+# 既存の ~/.gitconfig がある場合（認証・ユーザー情報もそのまま保持）
+Move-Item ~/.gitconfig ~/.gitconfig.local
+Copy-Item app-settings/git/.gitconfig ~/.gitconfig
+
+# Git を初めて設定する場合は、上の Move-Item の代わりにこちらを実行
+Copy-Item app-settings/git/.gitconfig.local.example ~/.gitconfig.local
+notepad ~/.gitconfig.local
+```
+
+`delta` が未導入の場合は `Install-DevTools` で導入できます。設定後は
+`git config --global --list` で読み込み結果を確認してください。
+
+## ステータスライン設定
+
+`claude/settings.template.json` の `statusLine` は `npx -y ccstatusline@latest`
+を呼び出します。ccstatusline はレイアウト設定を `~/ccstatusline-config.json`
+から読み込むため、管理元の
+`app-settings/ccstatusline/ccstatusline-config.json` をホーム直下に配置します。
+
+```powershell
+Copy-Item app-settings/ccstatusline/ccstatusline-config.json ~/ccstatusline-config.json
+```
+
+配置後は Claude Code を再起動すると、モデル・コンテキスト使用率・git ブランチ・
+セッション使用量の 3 行構成が反映されます。
+
 ## セットアップ手順
 
 ### 1. リポジトリをクローン
@@ -44,7 +78,7 @@ powershell.exe -ExecutionPolicy Bypass -File claude\install.ps1
 
 ## AI 向け CLI ツール
 
-`C:\Users\aksh0\AppData\Local\Microsoft\WinGet\Links\` に以下のツールをインストール済みです。
+`%LOCALAPPDATA%\Microsoft\WinGet\Links\` に以下のツールをインストール済みです。
 
 - `jq` v1.8.1: JSON プロセッサ。API レスポンスや設定ファイルの前処理でトークン消費を大きく抑えられます。
 - `rg` (ripgrep) v15.1.0: `.gitignore` を自動除外する高速 grep。`--json` 出力に対応し、多くの AI エージェントと相性が良いです。

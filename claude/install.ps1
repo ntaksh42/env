@@ -15,6 +15,7 @@ $SkillsDestDir   = Join-Path $ClaudeDir "skills"
 $AgentsSourceDir = Join-Path $ScriptDir "agents"
 $AgentsDestDir   = Join-Path $ClaudeDir "agents"
 $TemplateFile    = Join-Path $ScriptDir "settings.template.json"
+$GlobalClaudeMd  = Join-Path $ScriptDir "CLAUDE.global.md"
 
 Write-Host "Claude Code dotfiles installer" -ForegroundColor Cyan
 Write-Host "==============================" -ForegroundColor Cyan
@@ -75,6 +76,11 @@ if (Test-Path $SkillsSourceDir) {
     $SkillDirs = Get-ChildItem -Path $SkillsSourceDir -Directory
     foreach ($skillDir in $SkillDirs) {
         $destSkillDir = Join-Path $SkillsDestDir $skillDir.Name
+        # 既存を消してから入れ替える。Copy-Item -Recurse は展開先が既にあると
+        # その配下へ入れ子コピーしてしまい、削除済みファイルも残るため。
+        if (Test-Path $destSkillDir) {
+            Remove-Item $destSkillDir -Recurse -Force
+        }
         Copy-Item $skillDir.FullName $destSkillDir -Recurse -Force
         Write-Host "  - $($skillDir.Name)" -ForegroundColor Gray
     }
@@ -92,6 +98,19 @@ if (Test-Path $AgentsSourceDir) {
     }
 }
 
+# Copy global CLAUDE.md (CLAUDE.global.md -> ~/.claude/CLAUDE.md)
+if (Test-Path $GlobalClaudeMd) {
+    Write-Host "Copying global CLAUDE.md..." -ForegroundColor Green
+    $ClaudeMdDest = Join-Path $ClaudeDir "CLAUDE.md"
+    if (Test-Path $ClaudeMdDest) {
+        $ClaudeMdBackup = Join-Path $ClaudeDir "CLAUDE.md.backup.$(Get-Date -Format 'yyyyMMdd-HHmmss')"
+        Write-Host "  Backing up existing CLAUDE.md to $ClaudeMdBackup" -ForegroundColor Yellow
+        Copy-Item $ClaudeMdDest $ClaudeMdBackup
+    }
+    Copy-Item $GlobalClaudeMd $ClaudeMdDest -Force
+    Write-Host "  - CLAUDE.md (from CLAUDE.global.md)" -ForegroundColor Gray
+}
+
 # Set ENABLE_TOOL_SEARCH environment variable if not exists
 $envName = "ENABLE_TOOL_SEARCH"
 $currentValue = [Environment]::GetEnvironmentVariable($envName, "User")
@@ -107,7 +126,8 @@ if (-not $currentValue) {
 # Generate settings.json from template
 Write-Host "Generating settings.json..." -ForegroundColor Green
 $template = Get-Content $TemplateFile -Raw
-$claudeDirEscaped = $ClaudeDir -replace '\\', '\\\\'
+# JSON テキストへの埋め込みなのでバックスラッシュを1段だけエスケープする
+$claudeDirEscaped = $ClaudeDir -replace '\\', '\\'
 $settings = $template -replace '\{\{CLAUDE_DIR\}\}', $claudeDirEscaped
 
 $settingsObj = $settings | ConvertFrom-Json
@@ -121,7 +141,8 @@ if ($HookRegistrations.Count -gt 0) {
     }
 
     foreach ($reg in $HookRegistrations) {
-        $cmd = "powershell.exe -ExecutionPolicy Bypass -File `"%USERPROFILE%\\.claude\\hooks\\$($reg.file)`""
+        # PSObject に載せる値なので生パスで持たせる（エスケープは ConvertTo-Json が行う）
+        $cmd = "powershell.exe -NoProfile -ExecutionPolicy Bypass -File `"$HooksDestDir\$($reg.file)`""
         $cmdEntry = [PSCustomObject]@{ type = "command"; command = $cmd }
         if ($null -ne $reg.async)       { $cmdEntry | Add-Member -MemberType NoteProperty -Name "async"       -Value $reg.async }
         if ($null -ne $reg.asyncRewake) { $cmdEntry | Add-Member -MemberType NoteProperty -Name "asyncRewake" -Value $reg.asyncRewake }
@@ -150,7 +171,9 @@ if ($HookRegistrations.Count -gt 0) {
     }
 }
 
-$settingsObj | ConvertTo-Json -Depth 10 | Set-Content -Path $SettingsFile -Encoding UTF8
+# PS 5.1 の -Encoding UTF8 は BOM を付けるため、BOM なし UTF-8 を明示して書き出す
+$settingsJson = $settingsObj | ConvertTo-Json -Depth 10
+[System.IO.File]::WriteAllText($SettingsFile, $settingsJson, (New-Object System.Text.UTF8Encoding $false))
 
 Write-Host ""
 Write-Host "Installation complete!" -ForegroundColor Green

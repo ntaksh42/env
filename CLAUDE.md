@@ -12,6 +12,7 @@ Windows環境のClaude Code dotfiles・開発環境構成リポジトリ。Claud
 claude/              Claude Code 設定の管理元（~/.claude へインストール）
   install.ps1        インストーラ（hooks・skills・settingsを ~/.claude に展開）
   settings.template.json  settings.json テンプレート（{{CLAUDE_DIR}} 等のプレースホルダ）
+  CLAUDE.global.md   グローバル CLAUDE.md の管理元（~/.claude/CLAUDE.md へ展開、既存はバックアップ）
   hooks/             フック用PowerShellスクリプト（.HOOKブロックでメタデータ定義）
   skills/            Claude Code スキル（各サブディレクトリが1スキル）
   agents/            サブエージェント定義（.md、~/.claude/agents へインストール）
@@ -53,9 +54,9 @@ pwsh -File tools/Sync-AppSettings.ps1 -Direction Pull  # 実環境 -> repo
 ## 開発規約
 
 - hookスクリプトには必ず `.HOOK` メタデータブロックを含める（install.ps1の自動登録に必要）
-- スキルはサブディレクトリ形式（`SKILL.md` + `references/`）を推奨
+- スキルはサブディレクトリ形式（`SKILL.md` + `references/`）を使用する（`*.skill` 単一ファイル形式は install.ps1 がコピーしないため展開されない）
 - PowerShellスクリプトは `$ErrorActionPreference = "Stop"` を使用
-- settings.template.json のパスには `\\\\` エスケープを使用（JSON + PowerShellの二重エスケープ）
+- settings.template.json のパスは JSON 文字列としての `\\` エスケープを使用（`\\\\` は過剰）
 
 ## モデルの使い分け
 
