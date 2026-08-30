@@ -1,0 +1,7 @@
+// 配置先: %APPDATA%\Code\User\keybindings.json
+// 反映方法: 手動コピー
+//
+// Visual Studio 寄りのキー操作は拡張機能 ms-vscode.vs-keybindings (Visual Studio Keymap)
+// で大半をカバーする。ここには拡張機能でカバーされない差分のみ追記する。
+[
+]

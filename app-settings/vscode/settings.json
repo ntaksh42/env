@@ -1,0 +1,12 @@
+// 配置先: %APPDATA%\Code\User\settings.json
+// 反映方法: 手動コピー
+{
+    "git.autofetch": true,
+    "code-runner.runInTerminal": true,
+    "C_Cpp.default.includePath": [
+        "C:\\MinGW\\include"
+    ],
+    "git.confirmSync": false,
+    "github.copilot.nextEditSuggestions.enabled": true,
+    "chat.mcp.gallery.enabled": true
+}
