@@ -47,7 +47,6 @@ function Get-InitCache {
 # ---------------------------------------------------------------------------
 # §1 Aliases
 # ---------------------------------------------------------------------------
-Set-Alias cc    claude
 Set-Alias cop   copilot
 Set-Alias g     git
 Set-Alias which Get-Command
@@ -626,8 +625,9 @@ Set-Alias ccfo fable-orchest-opus
 Set-Alias cco  opus-orchest
 Set-Alias ccfp fable-orchest-plan
 
-# 司令塔プロンプトを注入しない素の起動。委譲構成が不要な通常作業向け。
-function ccop { claude --model claude-opus-5 @args }
+# claude 起動の既定コマンド（Opus 5、司令塔プロンプトなし）。ccop は互換用エイリアス。
+function cc   { claude --model claude-opus-5 @args }
+Set-Alias ccop cc
 function ccp  { claude --model claude-opus-5 --permission-mode plan @args }
 
 # 直近の会話を継続 / セッションを選んで再開
@@ -995,8 +995,8 @@ $script:ProfileHelp = [ordered]@{
         @{ Cmd='fable-orchest-opus / ccfo'; Desc='Fable が立案・Opus 5 が実行の構成で claude 起動' }
         @{ Cmd='opus-orchest / cco'; Desc='Opus 5 が立案・Sonnet 5 が実行の構成で claude 起動' }
         @{ Cmd='fable-orchest-plan / ccfp'; Desc='ccf を plan モードで起動（立案を承認してから実行）' }
-        @{ Cmd='ccop';             Desc='Opus 5 単体で claude 起動（司令塔プロンプトなし）' }
-        @{ Cmd='ccp';              Desc='ccop を plan モードで起動' }
+        @{ Cmd='cc / ccop';        Desc='Opus 5 で claude 起動（司令塔プロンプトなし、既定コマンド）' }
+        @{ Cmd='ccp';              Desc='cc を plan モードで起動' }
         @{ Cmd='ccc';              Desc='直近の会話を継続 (claude --continue)' }
         @{ Cmd='ccr';              Desc='セッションを選んで再開 (claude --resume)' }
     )
@@ -1017,7 +1017,7 @@ $script:ProfileHelp = [ordered]@{
         @{ Cmd='Update-DevTools';  Desc='winget/PS モジュールを更新' }
     )
     'Aliases' = @(
-        @{ Cmd='cc / cop';         Desc='claude / copilot' }
+        @{ Cmd='cop';              Desc='copilot' }
         @{ Cmd='g';                Desc='git' }
         @{ Cmd='which';            Desc='Get-Command' }
     )
