@@ -78,8 +78,16 @@ if (Test-Path $SkillsSourceDir) {
         $destSkillDir = Join-Path $SkillsDestDir $skillDir.Name
         # 既存を消してから入れ替える。Copy-Item -Recurse は展開先が既にあると
         # その配下へ入れ子コピーしてしまい、削除済みファイルも残るため。
+        # シンボリックリンク/ジャンクションの場合、Remove-Item -Recurse -Force は
+        # リンクをたどってリンク先の中身ごと削除してしまうため、リンク自体だけを
+        # 外す ([IO.Directory]::Delete の非再帰) 経路を分ける。
         if (Test-Path $destSkillDir) {
-            Remove-Item $destSkillDir -Recurse -Force
+            $existingDest = Get-Item -LiteralPath $destSkillDir -Force
+            if ($existingDest.LinkType) {
+                [System.IO.Directory]::Delete($destSkillDir, $false)
+            } else {
+                Remove-Item $destSkillDir -Recurse -Force
+            }
         }
         Copy-Item $skillDir.FullName $destSkillDir -Recurse -Force
         Write-Host "  - $($skillDir.Name)" -ForegroundColor Gray
@@ -125,7 +133,7 @@ if (-not $currentValue) {
 
 # Generate settings.json from template
 Write-Host "Generating settings.json..." -ForegroundColor Green
-$template = Get-Content $TemplateFile -Raw
+$template = Get-Content $TemplateFile -Raw -Encoding UTF8
 # JSON テキストへの埋め込みなのでバックスラッシュを1段だけエスケープする
 $claudeDirEscaped = $ClaudeDir -replace '\\', '\\'
 $settings = $template -replace '\{\{CLAUDE_DIR\}\}', $claudeDirEscaped
