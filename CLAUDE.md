@@ -44,6 +44,10 @@ powershell.exe -ExecutionPolicy Bypass -File claude/install.ps1
 
 # 複数gitリポジトリの一括pull
 powershell.exe -File tools/Update-GitRepositories.ps1 -Path "C:\Projects"
+
+# app-settings/ の設定ファイルと実環境の配置先を同期
+pwsh -File tools/Sync-AppSettings.ps1                  # repo -> 実環境（既定）
+pwsh -File tools/Sync-AppSettings.ps1 -Direction Pull  # 実環境 -> repo
 ```
 
 ## 開発規約

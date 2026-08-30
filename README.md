@@ -12,7 +12,6 @@ claude/
   skills/                  Claude Code スキル
 app-settings/              アプリ設定ファイルのバックアップ
 tools/                     汎用 PowerShell ユーティリティ
-docs/                      ドキュメント・設計資料
 ```
 
 ## セットアップ手順
@@ -76,4 +75,8 @@ powershell.exe -ExecutionPolicy Bypass -File claude\install.ps1
 ```powershell
 # 複数 git リポジトリを一括 pull
 powershell.exe -File tools\Update-GitRepositories.ps1 -Path "C:\Projects"
+
+# app-settings/ の設定ファイルと実環境の配置先を同期
+pwsh -File tools\Sync-AppSettings.ps1              # repo -> 実環境 (既定)
+pwsh -File tools\Sync-AppSettings.ps1 -Direction Pull  # 実環境 -> repo
 ```
