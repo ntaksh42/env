@@ -1,12 +1,95 @@
-// 配置先: %APPDATA%\Code\User\settings.json
-// 反映方法: 手動コピー
 {
-    "git.autofetch": true,
-    "code-runner.runInTerminal": true,
-    "C_Cpp.default.includePath": [
-        "C:\\MinGW\\include"
-    ],
-    "git.confirmSync": false,
-    "github.copilot.nextEditSuggestions.enabled": true,
-    "chat.mcp.gallery.enabled": true
+  "workbench.colorTheme": "Solarized Dark",
+  "workbench.activityBar.compact": true,
+  "workbench.panel.showLabels": false,
+  "workbench.editor.highlightModifiedTabs": true,
+  "workbench.editor.enablePreview": false,
+  "workbench.startupEditor": "none",
+  "editor.formatOnSave": true,
+  "editor.formatOnType": true,
+  "editor.bracketPairColorization.enabled": true,
+  "editor.guides.bracketPairs": "active",
+  "editor.renderWhitespace": "boundary",
+  "editor.rulers": [
+    120
+  ],
+  "editor.stickyScroll.enabled": true,
+  "editor.suggestSelection": "first",
+  "editor.inlineSuggest.enabled": true,
+  "editor.linkedEditing": true,
+  "editor.codeActionsOnSave": {
+    "source.organizeImports": "explicit"
+  },
+  "files.trimTrailingWhitespace": true,
+  "files.insertFinalNewline": true,
+  "files.autoSave": "onFocusChange",
+  "files.exclude": {
+    "**/bin": true,
+    "**/obj": true,
+    "**/.vs": true
+  },
+  "search.exclude": {
+    "**/bin": true,
+    "**/obj": true,
+    "**/packages": true,
+    "**/node_modules": true
+  },
+  "explorer.confirmDelete": false,
+  "explorer.confirmDragAndDrop": false,
+  "explorer.compactFolders": false,
+  "git.confirmSync": false,
+  "git.autofetch": true,
+  "git.enableSmartCommit": true,
+  "git.openRepositoryInParentFolders": "always",
+  "gitlens.currentLine.enabled": false,
+  "gitlens.codeLens.enabled": true,
+  "gitlens.hovers.currentLine.over": "line",
+  "gitlens.blame.avatars": false,
+  "dotnet.defaultSolution": "disable",
+  "dotnet.completion.showCompletionItemsFromUnimportedNamespaces": true,
+  "dotnet.inlayHints.enableInlayHintsForParameters": true,
+  "dotnet.inlayHints.enableInlayHintsForTypes": true,
+  "dotnet.server.useOmnisharp": false,
+  "csharp.inlayHints.enableInlayHintsForParameters": true,
+  "csharp.inlayHints.enableInlayHintsForTypes": true,
+  "csharp.semanticHighlighting.enabled": true,
+  "omnisharp.enableEditorConfigSupport": true,
+  "omnisharp.enableRoslynAnalyzers": true,
+  "[csharp]": {
+    "editor.defaultFormatter": "ms-dotnettools.csharp",
+    "editor.formatOnSave": true,
+    "editor.tabSize": 4,
+    "editor.insertSpaces": true
+  },
+  "[json]": {
+    "editor.defaultFormatter": "vscode.json-language-features"
+  },
+  "[jsonc]": {
+    "editor.defaultFormatter": "vscode.json-language-features"
+  },
+  "[xml]": {
+    "editor.defaultFormatter": "redhat.vscode-xml"
+  },
+  "[powershell]": {
+    "editor.tabSize": 4
+  },
+  "terminal.integrated.defaultProfile.windows": "PowerShell",
+  "terminal.integrated.scrollback": 10000,
+  "terminal.integrated.enablePersistentSessions": false,
+  "debug.internalConsoleOptions": "openOnSessionStart",
+  "debug.toolBarLocation": "docked",
+  "debug.showInlineBreakpointCandidates": true,
+  "debug.inlineValues": "auto",
+  "claudeCode.preferredLocation": "panel",
+  "chat.mcp.gallery.enabled": true,
+  "azdoPullRequests.orgUrl": "https://dev.azure.com/aksh0402",
+  "reviewlens.orgUrl": "https://dev.azure.com/aksh0402/",
+  "reviewlens.project": "DashboardDemo",
+  "redhat.telemetry.enabled": false,
+  "telemetry.telemetryLevel": "off",
+  "code-runner.runInTerminal": true,
+  "C_Cpp.default.includePath": [
+    "C:\\MinGW\\include"
+  ],
+  "github.copilot.nextEditSuggestions.enabled": true
 }

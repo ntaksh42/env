@@ -1,7 +1,168 @@
-// 配置先: %APPDATA%\Code\User\keybindings.json
-// 反映方法: 手動コピー
-//
-// Visual Studio 寄りのキー操作は拡張機能 ms-vscode.vs-keybindings (Visual Studio Keymap)
-// で大半をカバーする。ここには拡張機能でカバーされない差分のみ追記する。
 [
+  {
+    "key": "ctrl+k ctrl+c",
+    "command": "editor.action.addCommentLine",
+    "when": "editorTextFocus && !editorReadonly"
+  },
+  {
+    "key": "ctrl+k ctrl+u",
+    "command": "editor.action.removeCommentLine",
+    "when": "editorTextFocus && !editorReadonly"
+  },
+  {
+    "key": "ctrl+f12",
+    "command": "editor.action.goToImplementation",
+    "when": "editorHasImplementationProvider && editorTextFocus"
+  },
+  {
+    "key": "ctrl+k ctrl+t",
+    "command": "editor.showCallHierarchy",
+    "when": "editorHasCallHierarchyProvider"
+  },
+  {
+    "key": "ctrl+,",
+    "command": "-workbench.action.openSettings"
+  },
+  {
+    "key": "ctrl+-",
+    "command": "-workbench.action.zoomOut"
+  },
+  {
+    "key": "ctrl+shift+-",
+    "command": "-workbench.action.zoomOut"
+  },
+  {
+    "key": "ctrl+numpad_subtract",
+    "command": "-workbench.action.zoomOut"
+  },
+  {
+    "key": "ctrl+=",
+    "command": "-workbench.action.zoomIn"
+  },
+  {
+    "key": "ctrl+shift+=",
+    "command": "-workbench.action.zoomIn"
+  },
+  {
+    "key": "ctrl+numpad_add",
+    "command": "-workbench.action.zoomIn"
+  },
+  {
+    "key": "ctrl+numpad0",
+    "command": "-workbench.action.zoomReset"
+  },
+  {
+    "key": "ctrl+-",
+    "command": "workbench.action.navigateBack"
+  },
+  {
+    "key": "ctrl+shift+-",
+    "command": "workbench.action.navigateForward"
+  },
+  {
+    "key": "ctrl+alt+-",
+    "command": "workbench.action.zoomOut"
+  },
+  {
+    "key": "ctrl+alt+;",
+    "command": "workbench.action.zoomIn"
+  },
+  {
+    "key": "ctrl+alt+0",
+    "command": "workbench.action.zoomReset"
+  },
+  {
+    "key": "ctrl+alt+,",
+    "command": "workbench.action.openSettings"
+  },
+  {
+    "key": "ctrl+m ctrl+m",
+    "command": "editor.toggleFold",
+    "when": "editorTextFocus"
+  },
+  {
+    "key": "ctrl+m ctrl+l",
+    "command": "editor.unfoldAll",
+    "when": "editorTextFocus"
+  },
+  {
+    "key": "ctrl+m ctrl+o",
+    "command": "editor.foldAllMarkerRegions",
+    "when": "editorTextFocus"
+  },
+  {
+    "key": "ctrl+f5",
+    "command": "workbench.action.debug.run"
+  },
+  {
+    "key": "ctrl+alt+b",
+    "command": "workbench.debug.action.focusBreakpointsView"
+  },
+  {
+    "key": "ctrl+alt+w",
+    "command": "workbench.debug.action.focusWatchView"
+  },
+  {
+    "key": "ctrl+alt+i",
+    "command": "workbench.debug.action.toggleRepl"
+  },
+  {
+    "key": "f8",
+    "command": "editor.action.marker.next",
+    "when": "editorFocus"
+  },
+  {
+    "key": "shift+f8",
+    "command": "editor.action.marker.prev",
+    "when": "editorFocus"
+  },
+  {
+    "key": "ctrl+\\ ctrl+e",
+    "command": "workbench.actions.view.problems"
+  },
+  {
+    "key": "ctrl+alt+f",
+    "command": "workbench.view.search"
+  },
+  {
+    "key": "ctrl+alt+g",
+    "command": "workbench.view.scm"
+  },
+  {
+    "key": "ctrl+r ctrl+g",
+    "command": "editor.action.organizeImports",
+    "when": "editorTextFocus && !editorReadonly"
+  },
+  {
+    "key": "ctrl+r ctrl+m",
+    "command": "editor.action.refactor",
+    "when": "editorHasCodeActionsProvider && editorTextFocus && !editorReadonly"
+  },
+  {
+    "key": "ctrl+k ctrl+o",
+    "command": "C_Cpp.SwitchHeaderSource",
+    "when": "editorTextFocus && editorLangId =~ /^(c|cpp)$/"
+  },
+  {
+    "key": "ctrl+e ctrl+d",
+    "command": "editor.action.formatDocument",
+    "when": "editorTextFocus && !editorReadonly"
+  },
+  {
+    "key": "ctrl+e ctrl+f",
+    "command": "editor.action.formatSelection",
+    "when": "editorTextFocus && !editorReadonly"
+  },
+  {
+    "key": "ctrl+alt+pagedown",
+    "command": "workbench.action.nextEditor"
+  },
+  {
+    "key": "ctrl+alt+pageup",
+    "command": "workbench.action.previousEditor"
+  },
+  {
+    "key": "ctrl+k ctrl+w",
+    "command": "workbench.action.closeAllEditors"
+  }
 ]
