@@ -16,6 +16,7 @@ donjayamanne.githistory
 
 # --- AI ----------------------------------------------------------------
 anthropic.claude-code
+openai.chatgpt
 
 # --- .NET / C# ---------------------------------------------------------
 ms-dotnettools.csharp
@@ -24,16 +25,12 @@ ms-dotnettools.vscode-dotnet-runtime
 ms-dotnettools.vscodeintellicode-csharp
 formulahendry.dotnet-test-explorer
 
-# --- C / C++ -----------------------------------------------------------
+# --- C / C++ -------------------------------------------------------------
+# ビルドはしないため、コンパイル/実行/CMakeビルド/デバッガ系は除外し
+# IntelliSense・コード閲覧用の拡張のみ残す。
 ms-vscode.cpptools
-ms-vscode.cpptools-extension-pack
 ms-vscode.cpptools-themes
 mitaki28.vscode-clang
-danielpinto8zz6.c-cpp-compile-run
-ms-vscode.cmake-tools
-twxs.cmake
-franneck94.c-cpp-runner
-vadimcn.vscode-lldb
 
 # --- Python ------------------------------------------------------------
 ms-python.python
@@ -55,7 +52,6 @@ zainchen.json
 
 # --- Markdown / ドキュメント -------------------------------------------
 starkwang.markdown
-yzane.markdown-pdf
 hediet.vscode-drawio
 davidanson.vscode-markdownlint
 yzhang.markdown-all-in-one
@@ -77,19 +73,3 @@ formulahendry.code-runner
 # --- その他 ------------------------------------------------------------
 devonray.snippet
 github.github-vscode-theme
-reviewlens.reviewlens
-
-# --- Jupyter -----------------------------------------------------------
-# このマシンでは .ipynb が 0 件だったため 2026-09-02 の棚卸しで削除した。
-# 別マシンで使う場合はコメントを外す。
-# ms-toolsai.jupyter
-# ms-toolsai.jupyter-keymap
-# ms-toolsai.jupyter-renderers
-# ms-toolsai.vscode-jupyter-cell-tags
-# ms-toolsai.vscode-jupyter-slideshow
-
-# --- 重複・非推奨 ------------------------------------------------------
-# eighthundreds.vscode-drawio は hediet.vscode-drawio と機能が重複するため無効化。
-# eighthundreds.vscode-drawio
-# ms-vscode.cpp-devtools は cpptools に統合済み。
-# ms-vscode.cpp-devtools

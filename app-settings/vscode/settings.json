@@ -73,7 +73,13 @@
   "[powershell]": {
     "editor.tabSize": 4
   },
-  "terminal.integrated.defaultProfile.windows": "PowerShell",
+  "terminal.integrated.defaultProfile.windows": "PowerShell 7",
+  "terminal.integrated.profiles.windows": {
+    "PowerShell 7": {
+      "path": "C:\\Program Files\\PowerShell\\7\\pwsh.exe",
+      "icon": "terminal-powershell"
+    }
+  },
   "terminal.integrated.scrollback": 10000,
   "terminal.integrated.enablePersistentSessions": false,
   "debug.internalConsoleOptions": "openOnSessionStart",
@@ -82,9 +88,6 @@
   "debug.inlineValues": "auto",
   "claudeCode.preferredLocation": "panel",
   "chat.mcp.gallery.enabled": true,
-  "azdoPullRequests.orgUrl": "https://dev.azure.com/aksh0402",
-  "reviewlens.orgUrl": "https://dev.azure.com/aksh0402/",
-  "reviewlens.project": "DashboardDemo",
   "redhat.telemetry.enabled": false,
   "telemetry.telemetryLevel": "off",
   "code-runner.runInTerminal": true,

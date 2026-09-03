@@ -1,6 +1,3 @@
-# Microsoft.PowerShell_profile.ps1 - PowerShell 7
-# 全部入りプロファイル: 日常コマンド + 環境構築補助
-
 # ---------------------------------------------------------------------------
 # §0 Encoding & internal helpers
 # ---------------------------------------------------------------------------
@@ -8,7 +5,8 @@
 # Ensure UTF-8 in/out (avoid mojibake; consistent across machines)
 try {
     [Console]::OutputEncoding = [Console]::InputEncoding = [System.Text.UTF8Encoding]::new()
-} catch {}
+}
+catch {}
 
 # Remember the file that was actually loaded. This remains correct when the
 # profile is dot-sourced from a synced or non-default location.
@@ -32,11 +30,11 @@ function Get-InitCache {
         [Parameter(Mandatory)][string]$Exe,
         [Parameter(Mandatory)][scriptblock]$Generator
     )
-    $dir   = Join-Path $env:LOCALAPPDATA 'pwsh-init-cache'
-    $path  = Join-Path $dir "$Name.ps1"
-    $src   = (Get-Command $Exe -ErrorAction Ignore).Source
+    $dir = Join-Path $env:LOCALAPPDATA 'pwsh-init-cache'
+    $path = Join-Path $dir "$Name.ps1"
+    $src = (Get-Command $Exe -ErrorAction Ignore).Source
     $stale = (-not (Test-Path -LiteralPath $path)) -or
-             ($src -and (Get-Item -LiteralPath $src).LastWriteTime -gt (Get-Item -LiteralPath $path).LastWriteTime)
+    ($src -and (Get-Item -LiteralPath $src).LastWriteTime -gt (Get-Item -LiteralPath $path).LastWriteTime)
     if ($stale) {
         New-Item -ItemType Directory -Force -Path $dir | Out-Null
         (& $Generator) | Out-String | Set-Content -LiteralPath $path -Encoding utf8
@@ -49,6 +47,7 @@ function Get-InitCache {
 # ---------------------------------------------------------------------------
 Set-Alias cop   copilot
 Set-Alias g     git
+Set-Alias cx     codex
 Set-Alias which Get-Command
 
 # ---------------------------------------------------------------------------
@@ -58,7 +57,7 @@ Set-Alias which Get-Command
 # Create directory and move into it
 function mkcd {
     param(
-        [Parameter(Mandatory=$true)][ValidateNotNullOrEmpty()][string]$Path
+        [Parameter(Mandatory = $true)][ValidateNotNullOrEmpty()][string]$Path
     )
     New-Item -ItemType Directory -Force -Path $Path -ErrorAction Stop | Out-Null
     Set-Location $Path -ErrorAction Stop
@@ -68,18 +67,19 @@ function mkcd {
 function size {
     param([string]$Path = ".")
     Get-ChildItem $Path |
-        ForEach-Object {
-            $bytes = if ($_.PSIsContainer) {
-                (Get-ChildItem $_.FullName -Recurse -File -ErrorAction SilentlyContinue |
-                 Measure-Object -Property Length -Sum).Sum ?? 0
-            } else { $_.Length }
-            [PSCustomObject]@{ Name = $_.Name; Size = [math]::Round($bytes / 1MB, 2) }
-        } | Sort-Object Size -Descending | Format-Table -AutoSize
+    ForEach-Object {
+        $bytes = if ($_.PSIsContainer) {
+            (Get-ChildItem $_.FullName -Recurse -File -ErrorAction SilentlyContinue |
+            Measure-Object -Property Length -Sum).Sum ?? 0
+        }
+        else { $_.Length }
+        [PSCustomObject]@{ Name = $_.Name; Size = [math]::Round($bytes / 1MB, 2) }
+    } | Sort-Object Size -Descending | Format-Table -AutoSize
 }
 
 # Go up directories
-function ..   { Set-Location .. }
-function ...  { Set-Location ..\.. }
+function .. { Set-Location .. }
+function ... { Set-Location ..\.. }
 function .... { Set-Location ..\..\.. }
 
 # Go up N directory levels (default 1)
@@ -110,7 +110,7 @@ function lt {
 function ff {
     if (-not (Test-Cmd fzf)) { Write-Warning 'ff needs fzf'; return }
     $sel = if (Test-Cmd fd) { & fd --type f | fzf }
-           else { Get-ChildItem -Recurse -File | Select-Object -ExpandProperty FullName | fzf }
+    else { Get-ChildItem -Recurse -File | Select-Object -ExpandProperty FullName | fzf }
     if ($sel) { Invoke-Item $sel }
 }
 
@@ -118,7 +118,7 @@ function ff {
 function fcd {
     if (-not (Test-Cmd fzf)) { Write-Warning 'fcd needs fzf'; return }
     $sel = if (Test-Cmd fd) { & fd --type d | fzf }
-           else { Get-ChildItem -Recurse -Directory | Select-Object -ExpandProperty FullName | fzf }
+    else { Get-ChildItem -Recurse -Directory | Select-Object -ExpandProperty FullName | fzf }
     if ($sel) { Set-Location $sel }
 }
 
@@ -185,7 +185,7 @@ $sw.Stop()
 
     $stats = $values | Measure-Object -Minimum -Maximum -Average
     [PSCustomObject]@{
-        Samples = $Samples
+        Samples   = $Samples
         AverageMs = [math]::Round($stats.Average, 2)
         MinimumMs = [math]::Round($stats.Minimum, 2)
         MaximumMs = [math]::Round($stats.Maximum, 2)
@@ -211,12 +211,12 @@ function gl { git log --oneline --graph --decorate -20 @args }
 # Undo last git commit (return to staging)
 function git-undo { git reset --soft HEAD~1 }
 
-function ga  { git add @args }
+function ga { git add @args }
 function gaa { git add -A @args }
-function gb  { git branch @args }
-function gd  { git diff @args }
+function gb { git branch @args }
+function gd { git diff @args }
 function gds { git diff --staged @args }
-function gp  { git push @args }
+function gp { git push @args }
 function gpf { git push --force-with-lease @args }
 
 # stash shortcuts
@@ -255,7 +255,7 @@ function gco {
 
 # These wrappers do not need an eager command lookup. If a tool is missing,
 # PowerShell's normal command-not-found message is sufficient on first use.
-function lg  { lazygit @args }
+function lg { lazygit @args }
 function prc { gh pr create @args }
 function prv { gh pr view --web @args }
 function prl { gh pr list @args }
@@ -281,9 +281,9 @@ function gclone {
 function glog {
     if (-not (Test-Cmd fzf)) { Write-Warning 'glog needs fzf'; return }
     $preview = if (Test-Cmd delta) { 'git show --color=always {1} | delta' }
-               else { 'git show --color=always {1}' }
+    else { 'git show --color=always {1}' }
     git log --color=always --format='%C(auto)%h %s %C(dim)%an, %ar' @args |
-        fzf --ansi --no-sort --reverse --preview $preview
+    fzf --ansi --no-sort --reverse --preview $preview
 }
 
 # gita wrapper: clean each repo's stray "nul" file, then pull every repo.
@@ -331,8 +331,8 @@ function clean-pull-all {
 function git-switch {
     if (-not (Test-Cmd fzf)) { Write-Warning 'git-switch needs fzf'; return }
     $sel = git branch --all --format='%(refname:short)' |
-        Where-Object { $_ -and $_ -notmatch '/HEAD$' } |
-        Sort-Object -Unique | fzf
+    Where-Object { $_ -and $_ -notmatch '/HEAD$' } |
+    Sort-Object -Unique | fzf
     if (-not $sel) { return }
     $local = $sel.Trim() -replace '^origin/', ''
     git rev-parse --verify --quiet "refs/heads/$local" *> $null
@@ -426,7 +426,8 @@ function vsdev {
     try {
         Import-Module $dll
         Enter-VsDevShell -VsInstallPath $vsPath -SkipAutomaticLocation -DevCmdArguments '-arch=x64 -host_arch=x64'
-    } catch {
+    }
+    catch {
         Write-Warning "vsdev failed: $($_.Exception.Message)"
     }
 }
@@ -451,8 +452,8 @@ function sln {
     $slns = Find-Sln
     if (-not $slns) { Write-Warning 'No .sln found upward from current directory'; return }
     $target = if ($slns.Count -eq 1) { $slns[0].FullName }
-              elseif (Test-Cmd fzf) { $slns.FullName | fzf }
-              else { $slns[0].FullName }
+    elseif (Test-Cmd fzf) { $slns.FullName | fzf }
+    else { $slns[0].FullName }
     if ($target) { Start-Process $devenv $target }
 }
 
@@ -465,9 +466,9 @@ function vs {
 }
 
 # dotnet / msbuild shortcuts
-function db  { dotnet build @args }
-function dr  { dotnet run @args }
-function dt  { dotnet test @args }
+function db { dotnet build @args }
+function dr { dotnet run @args }
+function dt { dotnet test @args }
 function msb { msbuild @args }
 
 # ---------------------------------------------------------------------------
@@ -526,7 +527,8 @@ $null = Register-EngineEvent -SourceIdentifier PowerShell.OnIdle -Action {
             if (Get-Command fzf -ErrorAction Ignore) {
                 Set-PSReadLineKeyHandler -Key Ctrl+r -ScriptBlock { Invoke-FzfHistory }
             }
-        } catch {}
+        }
+        catch {}
     }
     if (Get-Module -ListAvailable -Name Terminal-Icons) {
         Import-Module Terminal-Icons
@@ -548,7 +550,7 @@ Register-ArgumentCompleter -Native -CommandName winget -ScriptBlock {
     param($wordToComplete, $commandAst, $cursorPosition)
     [Console]::InputEncoding = [Console]::OutputEncoding = $OutputEncoding = [System.Text.Utf8Encoding]::new()
     $word = $wordToComplete.Replace('"', '""')
-    $ast  = $commandAst.ToString().Replace('"', '""')
+    $ast = $commandAst.ToString().Replace('"', '""')
     winget complete --word="$word" --commandline "$ast" --position $cursorPosition | ForEach-Object {
         [System.Management.Automation.CompletionResult]::new($_, $_, 'ParameterValue', $_)
     }
@@ -557,14 +559,14 @@ Register-ArgumentCompleter -Native -CommandName winget -ScriptBlock {
 # Reload PATH from Machine + User scope (use after installs; no shell restart)
 function refreshenv {
     $machine = [Environment]::GetEnvironmentVariable('Path', 'Machine')
-    $user    = [Environment]::GetEnvironmentVariable('Path', 'User')
+    $user = [Environment]::GetEnvironmentVariable('Path', 'User')
     $env:Path = ($machine, $user | Where-Object { $_ }) -join ';'
     Write-Host 'PATH refreshed.' -ForegroundColor Green
 }
 Set-Alias Update-SessionPath refreshenv
 
 # Clipboard shortcuts
-function clip  { $input | Set-Clipboard }
+function clip { $input | Set-Clipboard }
 function paste { Get-Clipboard }
 
 # Show public IP address
@@ -574,8 +576,8 @@ function myip { (Invoke-RestMethod -Uri 'https://api.ipify.org?format=json' -Tim
 function port {
     param([Parameter(Mandatory)][int]$Port)
     Get-NetTCPConnection -LocalPort $Port -ErrorAction SilentlyContinue |
-        Select-Object LocalAddress, LocalPort, State, OwningProcess,
-            @{ n='Process'; e={ (Get-Process -Id $_.OwningProcess -ErrorAction SilentlyContinue).ProcessName } }
+    Select-Object LocalAddress, LocalPort, State, OwningProcess,
+    @{ n = 'Process'; e = { (Get-Process -Id $_.OwningProcess -ErrorAction SilentlyContinue).ProcessName } }
 }
 
 # Kill the process(es) listening on a TCP port
@@ -611,14 +613,15 @@ function script:Invoke-ClaudeOrchest {
     $env:CLAUDE_CODE_SUBAGENT_MODEL = $SubagentModel
     try {
         claude --model $MainModel --append-system-prompt $orchestPrompt @Rest
-    } finally {
+    }
+    finally {
         if ($null -ne $prev) { $env:CLAUDE_CODE_SUBAGENT_MODEL = $prev }
         else { Remove-Item Env:CLAUDE_CODE_SUBAGENT_MODEL -ErrorAction Ignore }
     }
 }
-function fable-orchest      { Invoke-ClaudeOrchest 'claude-fable-5'  'claude-sonnet-5' $args }
+function fable-orchest { Invoke-ClaudeOrchest 'claude-fable-5'  'claude-sonnet-5' $args }
 function fable-orchest-opus { Invoke-ClaudeOrchest 'claude-fable-5'  'claude-opus-5' $args }
-function opus-orchest       { Invoke-ClaudeOrchest 'claude-opus-5'   'claude-sonnet-5' $args }
+function opus-orchest { Invoke-ClaudeOrchest 'claude-opus-5'   'claude-sonnet-5' $args }
 function fable-orchest-plan { Invoke-ClaudeOrchest 'claude-fable-5'  'claude-sonnet-5' (@('--permission-mode', 'plan') + $args) }
 Set-Alias ccf  fable-orchest
 Set-Alias ccfo fable-orchest-opus
@@ -626,9 +629,9 @@ Set-Alias cco  opus-orchest
 Set-Alias ccfp fable-orchest-plan
 
 # claude 起動の既定コマンド（Opus 5、司令塔プロンプトなし）。ccop は互換用エイリアス。
-function cc   { claude --model claude-opus-5 @args }
+function cc { claude --model claude-opus-5 @args }
 Set-Alias ccop cc
-function ccp  { claude --model claude-opus-5 --permission-mode plan @args }
+function ccp { claude --model claude-opus-5 --permission-mode plan @args }
 
 # 直近の会話を継続 / セッションを選んで再開
 function ccc { claude --continue @args }
@@ -637,10 +640,10 @@ function ccr { claude --resume @args }
 # --- codex ---
 # 既定は ~/.codex/config.toml (on-request / workspace-write)。
 # 以下は安全度と推論強度を起動時に切り替えるためのプリセット。
-function cx    { codex @args }
-function cxr   { codex -s read-only -a untrusted @args }
-function cxa   { codex -a never -s workspace-write @args }
-function cxh   { codex -c model_reasoning_effort="high" @args }
+function cx { codex @args }
+function cxr { codex -s read-only -a untrusted @args }
+function cxa { codex -a never -s workspace-write @args }
+function cxh { codex -c model_reasoning_effort="high" @args }
 function cxrev { codex review @args }
 
 # 直近セッションを継続 / セッションを選んで再開
@@ -650,13 +653,8 @@ function cxs { codex resume @args }
 # サンドボックスを外す。承認は残るので実行前に必ず目視が入る。
 function cxfa { codex -s danger-full-access @args }
 
-# 承認もサンドボックスも無効化する。取り消しの効かない操作がそのまま通るため、
-# 対象ディレクトリを提示して明示的な同意を取ってから起動する。
+# 承認もサンドボックスも無効化する。取り消しの効かない操作がそのまま通る。
 function cxyolo {
-    Write-Host "FULL ACCESS: 承認なし・サンドボックスなしで codex を起動します。" -ForegroundColor Red
-    Write-Host "  作業ディレクトリ: $(Get-Location)" -ForegroundColor Yellow
-    $answer = Read-Host "続行するには 'yes' と入力"
-    if ($answer -ne 'yes') { Write-Host "中止しました。" -ForegroundColor Gray; return }
     codex --dangerously-bypass-approvals-and-sandbox @args
 }
 
@@ -666,32 +664,29 @@ function cxyolo {
 
 # Tool catalog (data-driven). Backend: winget | msstore | pip | psmodule | script
 $script:DevTools = @(
-    @{ Name='Files';             Backend='winget';   Id='FilesCommunity.Files' }
-    @{ Name='Everything';        Backend='winget';   Id='voidtools.Everything' }
-    @{ Name='EverythingToolbar'; Backend='winget';   Id='stnkl.EverythingToolbar' }
-    @{ Name='PC Manager';        Backend='msstore';  Id='9PM860492SZD' }
-    @{ Name='Flow Launcher';     Backend='winget';   Id='Flow-Launcher.Flow-Launcher' }
-    @{ Name='Waypoint';          Backend='script';   Id='https://raw.githubusercontent.com/ntaksh42/waypoint/main/installer/install.ps1'; Path=(Join-Path $env:LOCALAPPDATA 'Programs\waypoint\waypoint.exe') }
-    @{ Name='starship';          Backend='winget';   Id='Starship.Starship';     Cmd='starship' }
-    @{ Name='zoxide';            Backend='winget';   Id='ajeetdsouza.zoxide';   Cmd='zoxide' }
-    @{ Name='eza';               Backend='winget';   Id='eza-community.eza';     Cmd='eza' }
-    @{ Name='bat';               Backend='winget';   Id='sharkdp.bat';           Cmd='bat' }
-    @{ Name='fd';                Backend='winget';   Id='sharkdp.fd';            Cmd='fd' }
-    @{ Name='ripgrep';           Backend='winget';   Id='BurntSushi.ripgrep.MSVC'; Cmd='rg' }
-    @{ Name='jq';                Backend='winget';   Id='jqlang.jq';             Cmd='jq' }
-    @{ Name='delta';             Backend='winget';   Id='dandavison.delta';      Cmd='delta'; PostInstall='delta' }
-    @{ Name='gsudo';             Backend='winget';   Id='gerardog.gsudo';        Cmd='gsudo' }
-    @{ Name='lazygit';           Backend='winget';   Id='JesseDuffield.lazygit'; Cmd='lazygit' }
-    @{ Name='Zed';               Backend='winget';   Id='ZedIndustries.Zed';     Cmd='zed' }
-    @{ Name='VSCode';            Backend='winget';   Id='Microsoft.VisualStudioCode'; Cmd='code' }
-    @{ Name='Python';            Backend='winget';   Id='Python.Python.3.12';    Cmd='python' }
-    @{ Name='PSFzf';             Backend='psmodule'; Id='PSFzf' }
-    @{ Name='Terminal-Icons';    Backend='psmodule'; Id='Terminal-Icons' }
-    @{ Name='gita';              Backend='pip';      Id='gita';                  Cmd='gita' }
-    @{ Name='git';               Backend='winget';   Id='Git.Git';               Cmd='git' }
-    @{ Name='gh';                Backend='winget';   Id='GitHub.cli';            Cmd='gh' }
-    @{ Name='Azure CLI';         Backend='winget';   Id='Microsoft.AzureCLI';    Cmd='az' }
-    @{ Name='fzf';               Backend='winget';   Id='junegunn.fzf';          Cmd='fzf' }
+    @{ Name = 'Files'; Backend = 'winget'; Id = 'FilesCommunity.Files' }
+    @{ Name = 'Everything'; Backend = 'winget'; Id = 'voidtools.Everything' }
+    @{ Name = 'PC Manager'; Backend = 'msstore'; Id = '9PM860492SZD' }
+    @{ Name = 'Waypoint'; Backend = 'script'; Id = 'https://raw.githubusercontent.com/ntaksh42/waypoint/main/installer/install.ps1'; Path = (Join-Path $env:LOCALAPPDATA 'Programs\waypoint\waypoint.exe') }
+    @{ Name = 'starship'; Backend = 'winget'; Id = 'Starship.Starship'; Cmd = 'starship' }
+    @{ Name = 'zoxide'; Backend = 'winget'; Id = 'ajeetdsouza.zoxide'; Cmd = 'zoxide' }
+    @{ Name = 'eza'; Backend = 'winget'; Id = 'eza-community.eza'; Cmd = 'eza' }
+    @{ Name = 'bat'; Backend = 'winget'; Id = 'sharkdp.bat'; Cmd = 'bat' }
+    @{ Name = 'fd'; Backend = 'winget'; Id = 'sharkdp.fd'; Cmd = 'fd' }
+    @{ Name = 'ripgrep'; Backend = 'winget'; Id = 'BurntSushi.ripgrep.MSVC'; Cmd = 'rg' }
+    @{ Name = 'jq'; Backend = 'winget'; Id = 'jqlang.jq'; Cmd = 'jq' }
+    @{ Name = 'delta'; Backend = 'winget'; Id = 'dandavison.delta'; Cmd = 'delta'; PostInstall = 'delta' }
+    @{ Name = 'gsudo'; Backend = 'winget'; Id = 'gerardog.gsudo'; Cmd = 'gsudo' }
+    @{ Name = 'lazygit'; Backend = 'winget'; Id = 'JesseDuffield.lazygit'; Cmd = 'lazygit' }
+    @{ Name = 'VSCode'; Backend = 'winget'; Id = 'Microsoft.VisualStudioCode'; Cmd = 'code' }
+    @{ Name = 'Python'; Backend = 'winget'; Id = 'Python.Python.3.12'; Cmd = 'python' }
+    @{ Name = 'PSFzf'; Backend = 'psmodule'; Id = 'PSFzf' }
+    @{ Name = 'Terminal-Icons'; Backend = 'psmodule'; Id = 'Terminal-Icons' }
+    @{ Name = 'gita'; Backend = 'pip'; Id = 'gita'; Cmd = 'gita' }
+    @{ Name = 'git'; Backend = 'winget'; Id = 'Git.Git'; Cmd = 'git' }
+    @{ Name = 'gh'; Backend = 'winget'; Id = 'GitHub.cli'; Cmd = 'gh' }
+    @{ Name = 'Azure CLI'; Backend = 'winget'; Id = 'Microsoft.AzureCLI'; Cmd = 'az' }
+    @{ Name = 'fzf'; Backend = 'winget'; Id = 'junegunn.fzf'; Cmd = 'fzf' }
 )
 
 # Ensure Python/pip is available; install via winget if missing. Returns $true on success.
@@ -711,8 +706,8 @@ function Test-ToolInstalled {
     param([Parameter(Mandatory)]$Tool)
     switch ($Tool.Backend) {
         'psmodule' { return [bool](Get-Module -ListAvailable -Name $Tool.Id) }
-        'pip'      { return (Test-Cmd $Tool.Cmd) }
-        'script'   { return (Test-Path -LiteralPath $Tool.Path -PathType Leaf) }
+        'pip' { return (Test-Cmd $Tool.Cmd) }
+        'script' { return (Test-Path -LiteralPath $Tool.Path -PathType Leaf) }
         default {
             if ($Tool.Cmd -and (Test-Cmd $Tool.Cmd)) { return $true }
             $listed = winget list --id $Tool.Id --exact 2>$null | Select-String -SimpleMatch $Tool.Id
@@ -754,22 +749,23 @@ function Install-DevTools {
         $ok = $false
         try {
             switch ($t.Backend) {
-                'winget'   { winget install --id $t.Id --exact --source winget --accept-package-agreements --accept-source-agreements }
-                'msstore'  { winget install --id $t.Id --source msstore --accept-package-agreements --accept-source-agreements }
-                'pip'      {
+                'winget' { winget install --id $t.Id --exact --source winget --accept-package-agreements --accept-source-agreements }
+                'msstore' { winget install --id $t.Id --source msstore --accept-package-agreements --accept-source-agreements }
+                'pip' {
                     if (-not (Install-PythonIfMissing)) { throw 'Python/pip not found and could not be installed' }
                     if (Test-Cmd pip) { pip install --user $t.Id }
                     else { python -m pip install --user $t.Id }
                 }
                 'psmodule' { Install-Module $t.Id -Scope CurrentUser -Force -AcceptLicense }
-                'script'   {
+                'script' {
                     $installerPath = Join-Path $env:TEMP 'waypoint-install.ps1'
                     Invoke-WebRequest -Uri $t.Id -OutFile $installerPath
                     & $installerPath -Silent
                 }
             }
             $ok = $true
-        } catch {
+        }
+        catch {
             Write-Warning "  Failed: $($_.Exception.Message)"
         }
         $results += [PSCustomObject]@{ Tool = $t.Name; Result = if ($ok) { 'OK' } else { 'FAILED' } }
@@ -816,27 +812,29 @@ function Invoke-FzfHistory {
 
     while ($true) {
         $selected = Get-Content $histFile |
-            Where-Object { $_ -ne '' } |
-            Select-Object -Unique |
-            & fzf --scheme=history --no-sort --tac `
-                  --prompt 'history> ' `
-                  --expect 'del'
+        Where-Object { $_ -ne '' } |
+        Select-Object -Unique |
+        & fzf --scheme=history --no-sort --tac `
+            --prompt 'history> ' `
+            --expect 'del'
 
         # $selected[0] = 押されたキー、$selected[1] = 選択した行
         if (-not $selected) { return }
 
-        $key  = $selected[0]
+        $key = $selected[0]
         $line = $selected[1]
 
         if ($key -eq 'del' -and $line) {
             $content = Get-Content $histFile
             $content | Where-Object { $_ -ne $line } | Set-Content $histFile
             # ループして再表示
-        } elseif ($line) {
+        }
+        elseif ($line) {
             [Microsoft.PowerShell.PSConsoleReadLine]::InvokePrompt()
             [Microsoft.PowerShell.PSConsoleReadLine]::Insert($line)
             return
-        } else {
+        }
+        else {
             return
         }
     }
@@ -860,7 +858,7 @@ function Invoke-CommandPalette {
         }
     }
 
-    $sel = $rows | fzf --delimiter "`t" --with-nth 1,2,3 --prompt 'cmd> '
+    $sel = $rows | fzf --delimiter "`t" --with-nth 1, 2, 3 --prompt 'cmd> '
     if (-not $sel) { return }
 
     $cmdName = ($sel -split "`t")[0]
@@ -885,7 +883,7 @@ if ($host.Name -eq 'ConsoleHost' -and -not [Console]::IsInputRedirected -and -no
     Set-PSReadLineKeyHandler -Key Alt+a     -Function SelectCommandArgument
 
     # Smart auto-closing brackets / quotes (adapted from the PSReadLine sample profile)
-    Set-PSReadLineKeyHandler -Key '(','{','[' -BriefDescription InsertPairedBraces -ScriptBlock {
+    Set-PSReadLineKeyHandler -Key '(', '{', '[' -BriefDescription InsertPairedBraces -ScriptBlock {
         param($key, $arg)
         $close = @{ '(' = ')'; '{' = '}'; '[' = ']' }[[string]$key.KeyChar]
         $line = $null; $cursor = $null
@@ -895,31 +893,34 @@ if ($host.Name -eq 'ConsoleHost' -and -not [Console]::IsInputRedirected -and -no
         if ($selLen -ne -1) {
             [Microsoft.PowerShell.PSConsoleReadLine]::Replace($selStart, $selLen, "$($key.KeyChar)" + $line.Substring($selStart, $selLen) + $close)
             [Microsoft.PowerShell.PSConsoleReadLine]::SetCursorPosition($selStart + $selLen + 2)
-        } else {
+        }
+        else {
             [Microsoft.PowerShell.PSConsoleReadLine]::Insert("$($key.KeyChar)$close")
             [Microsoft.PowerShell.PSConsoleReadLine]::SetCursorPosition($cursor + 1)
         }
     }
 
-    Set-PSReadLineKeyHandler -Key ')',']','}' -BriefDescription SmartCloseBraces -ScriptBlock {
+    Set-PSReadLineKeyHandler -Key ')', ']', '}' -BriefDescription SmartCloseBraces -ScriptBlock {
         param($key, $arg)
         $line = $null; $cursor = $null
         [Microsoft.PowerShell.PSConsoleReadLine]::GetBufferState([ref]$line, [ref]$cursor)
         if ($cursor -lt $line.Length -and $line[$cursor] -eq $key.KeyChar) {
             [Microsoft.PowerShell.PSConsoleReadLine]::SetCursorPosition($cursor + 1)
-        } else {
+        }
+        else {
             [Microsoft.PowerShell.PSConsoleReadLine]::Insert("$($key.KeyChar)")
         }
     }
 
-    Set-PSReadLineKeyHandler -Key '"',"'" -BriefDescription SmartInsertQuote -ScriptBlock {
+    Set-PSReadLineKeyHandler -Key '"', "'" -BriefDescription SmartInsertQuote -ScriptBlock {
         param($key, $arg)
         $quote = $key.KeyChar
         $line = $null; $cursor = $null
         [Microsoft.PowerShell.PSConsoleReadLine]::GetBufferState([ref]$line, [ref]$cursor)
         if ($cursor -lt $line.Length -and $line[$cursor] -eq $quote) {
             [Microsoft.PowerShell.PSConsoleReadLine]::SetCursorPosition($cursor + 1)
-        } else {
+        }
+        else {
             [Microsoft.PowerShell.PSConsoleReadLine]::Insert("$quote$quote")
             [Microsoft.PowerShell.PSConsoleReadLine]::SetCursorPosition($cursor + 1)
         }
@@ -937,89 +938,89 @@ if ($host.Name -eq 'ConsoleHost' -and -not [Console]::IsInputRedirected -and -no
 
 # Catalog of commands defined above (data-driven; keep in sync when adding commands)
 $script:ProfileHelp = [ordered]@{
-    'Navigation & files' = @(
-        @{ Cmd='mkcd <path>';      Desc='ディレクトリを作成して移動' }
-        @{ Cmd='size [path]';      Desc='ファイル/フォルダのサイズ一覧 (MB, 降順)' }
-        @{ Cmd='.. / ... / ....';  Desc='1/2/3 階層上へ移動' }
-        @{ Cmd='up [n]';           Desc='n 階層上へ移動 (既定 1)' }
-        @{ Cmd='repos';            Desc='~/source/repos へジャンプ' }
-        @{ Cmd='ll / la / lt';     Desc='一覧表示 (eza があればアイコン/git 付き)' }
-        @{ Cmd='ff';               Desc='fzf でファイルを絞り込んで開く' }
-        @{ Cmd='fcd';              Desc='fzf でディレクトリを絞り込んで cd' }
-        @{ Cmd='touch <path>';     Desc='ファイル作成 / タイムスタンプ更新' }
-        @{ Cmd='backup-file <f>';  Desc='<名前>.bak-日時 でバックアップ作成' }
-        @{ Cmd='reload';           Desc='プロファイルを再読込' }
-        @{ Cmd='Measure-ProfileStartup'; Desc='プロファイル起動時間を別プロセスで計測' }
-        @{ Cmd='profile';          Desc='プロファイルを編集 (code/notepad)' }
+    'Navigation & files'    = @(
+        @{ Cmd = 'mkcd <path>'; Desc = 'ディレクトリを作成して移動' }
+        @{ Cmd = 'size [path]'; Desc = 'ファイル/フォルダのサイズ一覧 (MB, 降順)' }
+        @{ Cmd = '.. / ... / ....'; Desc = '1/2/3 階層上へ移動' }
+        @{ Cmd = 'up [n]'; Desc = 'n 階層上へ移動 (既定 1)' }
+        @{ Cmd = 'repos'; Desc = '~/source/repos へジャンプ' }
+        @{ Cmd = 'll / la / lt'; Desc = '一覧表示 (eza があればアイコン/git 付き)' }
+        @{ Cmd = 'ff'; Desc = 'fzf でファイルを絞り込んで開く' }
+        @{ Cmd = 'fcd'; Desc = 'fzf でディレクトリを絞り込んで cd' }
+        @{ Cmd = 'touch <path>'; Desc = 'ファイル作成 / タイムスタンプ更新' }
+        @{ Cmd = 'backup-file <f>'; Desc = '<名前>.bak-日時 でバックアップ作成' }
+        @{ Cmd = 'reload'; Desc = 'プロファイルを再読込' }
+        @{ Cmd = 'Measure-ProfileStartup'; Desc = 'プロファイル起動時間を別プロセスで計測' }
+        @{ Cmd = 'profile'; Desc = 'プロファイルを編集 (code/notepad)' }
     )
-    'Git / GitHub' = @(
-        @{ Cmd='gs';               Desc='git status -sb' }
-        @{ Cmd='gl';               Desc='git log をグラフ表示 (直近 20)' }
-        @{ Cmd='git-undo';         Desc='直前コミットを取り消し (staging へ戻す)' }
-        @{ Cmd='ga / gaa';         Desc='git add / git add -A' }
-        @{ Cmd='gb';               Desc='git branch' }
-        @{ Cmd='gd / gds';         Desc='git diff / git diff --staged' }
-        @{ Cmd='gp / gpf';         Desc='git push / push --force-with-lease' }
-        @{ Cmd='gpl / gf';         Desc='git pull / fetch --all --prune (大文字小文字違いブランチの ref 衝突対策込み)' }
-        @{ Cmd='gsta/gstp/gstl';   Desc='git stash push/pop/list' }
-        @{ Cmd='gcm <msg>';        Desc='git commit -m' }
-        @{ Cmd='gco [branch]';     Desc='checkout (引数なしは fzf で選択)' }
-        @{ Cmd='lg';               Desc='lazygit (あれば)' }
-        @{ Cmd='prc/prv/prl/prs';  Desc='gh pr create/view/list/status (あれば)' }
-        @{ Cmd='groot';            Desc='リポジトリのルートへ cd' }
-        @{ Cmd='gclone <url>';     Desc='clone して cd' }
-        @{ Cmd='glog';             Desc='fzf でコミット閲覧 (delta プレビュー)' }
-        @{ Cmd='clean-pull-all';   Desc='gita 全リポジトリを掃除して pull (-Fallback で切替先指定)' }
-        @{ Cmd='git-switch';       Desc='fzf でブランチ切替 (無ければ origin から作成)' }
-        @{ Cmd='git-clean-branches'; Desc='マージ済みローカルブランチを一括削除' }
-        @{ Cmd='git-nuke';         Desc='reset --hard + clean -ffdx で完全クリーン (-Ref/-Force)' }
-        @{ Cmd='gita-scan [path]'; Desc='直下の git リポジトリを gita に一括登録' }
+    'Git / GitHub'          = @(
+        @{ Cmd = 'gs'; Desc = 'git status -sb' }
+        @{ Cmd = 'gl'; Desc = 'git log をグラフ表示 (直近 20)' }
+        @{ Cmd = 'git-undo'; Desc = '直前コミットを取り消し (staging へ戻す)' }
+        @{ Cmd = 'ga / gaa'; Desc = 'git add / git add -A' }
+        @{ Cmd = 'gb'; Desc = 'git branch' }
+        @{ Cmd = 'gd / gds'; Desc = 'git diff / git diff --staged' }
+        @{ Cmd = 'gp / gpf'; Desc = 'git push / push --force-with-lease' }
+        @{ Cmd = 'gpl / gf'; Desc = 'git pull / fetch --all --prune (大文字小文字違いブランチの ref 衝突対策込み)' }
+        @{ Cmd = 'gsta/gstp/gstl'; Desc = 'git stash push/pop/list' }
+        @{ Cmd = 'gcm <msg>'; Desc = 'git commit -m' }
+        @{ Cmd = 'gco [branch]'; Desc = 'checkout (引数なしは fzf で選択)' }
+        @{ Cmd = 'lg'; Desc = 'lazygit (あれば)' }
+        @{ Cmd = 'prc/prv/prl/prs'; Desc = 'gh pr create/view/list/status (あれば)' }
+        @{ Cmd = 'groot'; Desc = 'リポジトリのルートへ cd' }
+        @{ Cmd = 'gclone <url>'; Desc = 'clone して cd' }
+        @{ Cmd = 'glog'; Desc = 'fzf でコミット閲覧 (delta プレビュー)' }
+        @{ Cmd = 'clean-pull-all'; Desc = 'gita 全リポジトリを掃除して pull (-Fallback で切替先指定)' }
+        @{ Cmd = 'git-switch'; Desc = 'fzf でブランチ切替 (無ければ origin から作成)' }
+        @{ Cmd = 'git-clean-branches'; Desc = 'マージ済みローカルブランチを一括削除' }
+        @{ Cmd = 'git-nuke'; Desc = 'reset --hard + clean -ffdx で完全クリーン (-Ref/-Force)' }
+        @{ Cmd = 'gita-scan [path]'; Desc = '直下の git リポジトリを gita に一括登録' }
     )
     'Visual Studio / build' = @(
-        @{ Cmd='vsdev';            Desc='現セッションを VS Developer 環境化' }
-        @{ Cmd='sln';              Desc='最寄りの .sln を VS で開く' }
-        @{ Cmd='vs [path]';        Desc='指定パスを VS で開く' }
-        @{ Cmd='db / dr / dt';     Desc='dotnet build / run / test' }
-        @{ Cmd='msb';              Desc='msbuild' }
+        @{ Cmd = 'vsdev'; Desc = '現セッションを VS Developer 環境化' }
+        @{ Cmd = 'sln'; Desc = '最寄りの .sln を VS で開く' }
+        @{ Cmd = 'vs [path]'; Desc = '指定パスを VS で開く' }
+        @{ Cmd = 'db / dr / dt'; Desc = 'dotnet build / run / test' }
+        @{ Cmd = 'msb'; Desc = 'msbuild' }
     )
-    'Tools & system' = @(
-        @{ Cmd='cat <file>';       Desc='bat 連携 (あれば)' }
-        @{ Cmd='sudo <cmd>';       Desc='gsudo 連携 (あれば)' }
-        @{ Cmd='z / zi';           Desc='zoxide スマート cd (あれば)' }
-        @{ Cmd='refreshenv';       Desc='PATH を再読込 (インストール後に)' }
-        @{ Cmd='clip / paste';     Desc='クリップボードへ書込 / 読出' }
-        @{ Cmd='myip';             Desc='公開 IP アドレスを表示' }
-        @{ Cmd='port <n>';         Desc='ポートを使用中のプロセスを表示' }
-        @{ Cmd='killport <n>';     Desc='ポートを使用中のプロセスを強制終了' }
-        @{ Cmd='fable-orchest / ccf'; Desc='Fable が立案・Sonnet 5 が実行の構成で claude 起動' }
-        @{ Cmd='fable-orchest-opus / ccfo'; Desc='Fable が立案・Opus 5 が実行の構成で claude 起動' }
-        @{ Cmd='opus-orchest / cco'; Desc='Opus 5 が立案・Sonnet 5 が実行の構成で claude 起動' }
-        @{ Cmd='fable-orchest-plan / ccfp'; Desc='ccf を plan モードで起動（立案を承認してから実行）' }
-        @{ Cmd='cc / ccop';        Desc='Opus 5 で claude 起動（司令塔プロンプトなし、既定コマンド）' }
-        @{ Cmd='ccp';              Desc='cc を plan モードで起動' }
-        @{ Cmd='ccc';              Desc='直近の会話を継続 (claude --continue)' }
-        @{ Cmd='ccr';              Desc='セッションを選んで再開 (claude --resume)' }
+    'Tools & system'        = @(
+        @{ Cmd = 'cat <file>'; Desc = 'bat 連携 (あれば)' }
+        @{ Cmd = 'sudo <cmd>'; Desc = 'gsudo 連携 (あれば)' }
+        @{ Cmd = 'z / zi'; Desc = 'zoxide スマート cd (あれば)' }
+        @{ Cmd = 'refreshenv'; Desc = 'PATH を再読込 (インストール後に)' }
+        @{ Cmd = 'clip / paste'; Desc = 'クリップボードへ書込 / 読出' }
+        @{ Cmd = 'myip'; Desc = '公開 IP アドレスを表示' }
+        @{ Cmd = 'port <n>'; Desc = 'ポートを使用中のプロセスを表示' }
+        @{ Cmd = 'killport <n>'; Desc = 'ポートを使用中のプロセスを強制終了' }
+        @{ Cmd = 'fable-orchest / ccf'; Desc = 'Fable が立案・Sonnet 5 が実行の構成で claude 起動' }
+        @{ Cmd = 'fable-orchest-opus / ccfo'; Desc = 'Fable が立案・Opus 5 が実行の構成で claude 起動' }
+        @{ Cmd = 'opus-orchest / cco'; Desc = 'Opus 5 が立案・Sonnet 5 が実行の構成で claude 起動' }
+        @{ Cmd = 'fable-orchest-plan / ccfp'; Desc = 'ccf を plan モードで起動（立案を承認してから実行）' }
+        @{ Cmd = 'cc / ccop'; Desc = 'Opus 5 で claude 起動（司令塔プロンプトなし、既定コマンド）' }
+        @{ Cmd = 'ccp'; Desc = 'cc を plan モードで起動' }
+        @{ Cmd = 'ccc'; Desc = '直近の会話を継続 (claude --continue)' }
+        @{ Cmd = 'ccr'; Desc = 'セッションを選んで再開 (claude --resume)' }
     )
-    'Codex' = @(
-        @{ Cmd='cx';               Desc='codex 素の起動（config.toml の既定に従う）' }
-        @{ Cmd='cxr';              Desc='読み取り専用で起動（調査・コードリーディング向け）' }
-        @{ Cmd='cxa';              Desc='承認なしで自動実行（サンドボックス内に限定）' }
-        @{ Cmd='cxh';              Desc='推論強度 high で起動（設計判断・難しいデバッグ）' }
-        @{ Cmd='cxrev';            Desc='コードレビューを実行 (codex review)' }
-        @{ Cmd='cxc';              Desc='直近セッションを継続 (codex resume --last)' }
-        @{ Cmd='cxs';              Desc='セッションを選んで再開 (codex resume)' }
-        @{ Cmd='cxfa';             Desc='サンドボックスを外して起動（承認は残る）' }
-        @{ Cmd='cxyolo';           Desc='承認・サンドボックスとも無効化（要 yes 確認）' }
+    'Codex'                 = @(
+        @{ Cmd = 'cx'; Desc = 'codex 素の起動（config.toml の既定に従う）' }
+        @{ Cmd = 'cxr'; Desc = '読み取り専用で起動（調査・コードリーディング向け）' }
+        @{ Cmd = 'cxa'; Desc = '承認なしで自動実行（サンドボックス内に限定）' }
+        @{ Cmd = 'cxh'; Desc = '推論強度 high で起動（設計判断・難しいデバッグ）' }
+        @{ Cmd = 'cxrev'; Desc = 'コードレビューを実行 (codex review)' }
+        @{ Cmd = 'cxc'; Desc = '直近セッションを継続 (codex resume --last)' }
+        @{ Cmd = 'cxs'; Desc = 'セッションを選んで再開 (codex resume)' }
+        @{ Cmd = 'cxfa'; Desc = 'サンドボックスを外して起動（承認は残る）' }
+        @{ Cmd = 'cxyolo'; Desc = '承認・サンドボックスとも無効化' }
     )
-    'Dev environment' = @(
-        @{ Cmd='Show-DevEnv';      Desc='開発ツールの導入状況を一覧' }
-        @{ Cmd='Install-DevTools'; Desc='未導入ツールを一括インストール' }
-        @{ Cmd='Update-DevTools';  Desc='winget/PS モジュールを更新' }
+    'Dev environment'       = @(
+        @{ Cmd = 'Show-DevEnv'; Desc = '開発ツールの導入状況を一覧' }
+        @{ Cmd = 'Install-DevTools'; Desc = '未導入ツールを一括インストール' }
+        @{ Cmd = 'Update-DevTools'; Desc = 'winget/PS モジュールを更新' }
     )
-    'Aliases' = @(
-        @{ Cmd='cop';              Desc='copilot' }
-        @{ Cmd='g';                Desc='git' }
-        @{ Cmd='which';            Desc='Get-Command' }
+    'Aliases'               = @(
+        @{ Cmd = 'cop'; Desc = 'copilot' }
+        @{ Cmd = 'g'; Desc = 'git' }
+        @{ Cmd = 'which'; Desc = 'Get-Command' }
     )
 }
 
@@ -1031,8 +1032,8 @@ function Show-ProfileHelp {
         $items = $script:ProfileHelp[$section]
         if ($Filter) {
             $items = @($items | Where-Object {
-                $_.Cmd -like "*$Filter*" -or $_.Desc -like "*$Filter*" -or $section -like "*$Filter*"
-            })
+                    $_.Cmd -like "*$Filter*" -or $_.Desc -like "*$Filter*" -or $section -like "*$Filter*"
+                })
         }
         if (-not $items) { continue }
 
