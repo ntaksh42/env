@@ -55,6 +55,7 @@ Visual Studio キーマップの土台は拡張 **`ms-vscode.vs-keybindings`**�
 | `F8` / `Shift+F8` | 次 / 前のエラー | VS のエラー一覧移動 |
 | `Ctrl+\, Ctrl+E` | エラー一覧（問題パネル） | |
 | `Ctrl+Alt+F` / `Ctrl+Alt+G` | 検索ビュー / Git ビュー | |
+| `Ctrl+Shift+R` | 最近開いたフォルダー | `Ctrl+R` が chord に使われているため（下記） |
 | `Ctrl+R, Ctrl+G` | using の整理 | C# |
 | `Ctrl+R, Ctrl+M` | リファクタリングメニュー | VS の「メソッドの抽出」相当 |
 | `Ctrl+K, Ctrl+O` | ヘッダ / ソース切替 | C/C++ のみ |
@@ -73,6 +74,17 @@ Visual Studio キーマップの土台は拡張 **`ms-vscode.vs-keybindings`**�
   **既定の `workbench.action.zoomOut` が勝ってしまい機能しない**。
   `zoomOut` は `Ctrl+-` と `Ctrl+numpad_subtract` の複数キーで登録されており、
   拡張側の定義だけでは打ち消せないため、ユーザー設定で明示的に解除している。
+
+### Ctrl+R が chord のため openRecent を移動
+
+`Ctrl+R` は拡張 `vs-keybindings` が chord の prefix として使っている
+（`Ctrl+R, Ctrl+R` = 名前の変更、`Ctrl+R, Ctrl+W` = 空白表示切替）。
+このリポジトリでも `Ctrl+R, Ctrl+G` / `Ctrl+R, Ctrl+M` を足している。
+
+prefix になっているキーは単独では発火せず次のキー入力を待つため、
+VSCode 既定の `Ctrl+R`（最近開いたフォルダー）は使えない。
+Visual Studio でも `Ctrl+R` 単独は使わないので chord はそのまま残し、
+**`Ctrl+Shift+R`** に `workbench.action.openRecent` を割り当てた。
 
 ### ズーム操作
 

@@ -129,6 +129,14 @@
     "command": "workbench.view.scm"
   },
   {
+    "key": "ctrl+shift+r",
+    "command": "-editor.action.refactor"
+  },
+  {
+    "key": "ctrl+shift+r",
+    "command": "workbench.action.openRecent"
+  },
+  {
     "key": "ctrl+r ctrl+g",
     "command": "editor.action.organizeImports",
     "when": "editorTextFocus && !editorReadonly"
