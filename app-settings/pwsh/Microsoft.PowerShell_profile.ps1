@@ -662,7 +662,11 @@ function cxyolo {
 # §6 Environment setup helpers
 # ---------------------------------------------------------------------------
 
-# Tool catalog (data-driven). Backend: winget | msstore | pip | psmodule | script
+# dotfiles リポジトリ（public）の raw コンテンツ取得元。app-settings 配下の設定ファイルを
+# クローンなしで取得するために使う。
+$script:DotfilesRawBase = 'https://raw.githubusercontent.com/ntaksh42/dotfiles/main'
+
+# Tool catalog (data-driven). Backend: winget | msstore | pip | psmodule | script | remote-config
 $script:DevTools = @(
     @{ Name = 'Files'; Backend = 'winget'; Id = 'FilesCommunity.Files' }
     @{ Name = 'Everything'; Backend = 'winget'; Id = 'voidtools.Everything' }
@@ -687,7 +691,24 @@ $script:DevTools = @(
     @{ Name = 'gh'; Backend = 'winget'; Id = 'GitHub.cli'; Cmd = 'gh' }
     @{ Name = 'Azure CLI'; Backend = 'winget'; Id = 'Microsoft.AzureCLI'; Cmd = 'az' }
     @{ Name = 'fzf'; Backend = 'winget'; Id = 'junegunn.fzf'; Cmd = 'fzf' }
+    @{ Name = 'starship.toml'; Backend = 'remote-config'; RepoPath = 'app-settings/starship/starship.toml'; Dest = (Join-Path $env:USERPROFILE '.config\starship.toml') }
+    @{ Name = 'VSCode settings.json'; Backend = 'remote-config'; RepoPath = 'app-settings/vscode/settings.json'; Dest = (Join-Path $env:APPDATA 'Code\User\settings.json') }
+    @{ Name = 'VSCode keybindings.json'; Backend = 'remote-config'; RepoPath = 'app-settings/vscode/keybindings.json'; Dest = (Join-Path $env:APPDATA 'Code\User\keybindings.json') }
+    @{ Name = 'ccstatusline settings.json'; Backend = 'remote-config'; RepoPath = 'app-settings/ccstatusline/settings.json'; Dest = (Join-Path $env:USERPROFILE '.config\ccstatusline\settings.json'); StripCommentLines = 2 }
 )
+
+# remote-config バックエンド用: リポジトリ内のファイルを raw 経由で取得する（先頭の
+# 管理用コメント行は StripCommentLines で除去できる）。
+function Get-DotfilesRemoteConfig {
+    param([Parameter(Mandatory)]$Tool)
+    $uri = "$script:DotfilesRawBase/$($Tool.RepoPath)"
+    $content = (Invoke-WebRequest -Uri $uri -UseBasicParsing).Content
+    if ($Tool.StripCommentLines) {
+        $lines = $content -split "`r?`n"
+        $content = ($lines | Select-Object -Skip $Tool.StripCommentLines) -join "`n"
+    }
+    return $content
+}
 
 # Ensure Python/pip is available; install via winget if missing. Returns $true on success.
 function Install-PythonIfMissing {
@@ -708,6 +729,17 @@ function Test-ToolInstalled {
         'psmodule' { return [bool](Get-Module -ListAvailable -Name $Tool.Id) }
         'pip' { return (Test-Cmd $Tool.Cmd) }
         'script' { return (Test-Path -LiteralPath $Tool.Path -PathType Leaf) }
+        'remote-config' {
+            if (-not (Test-Path -LiteralPath $Tool.Dest -PathType Leaf)) { return $false }
+            try {
+                $remote = Get-DotfilesRemoteConfig $Tool
+                $local = Get-Content -LiteralPath $Tool.Dest -Raw
+                return ($local -eq $remote)
+            }
+            catch {
+                return $false
+            }
+        }
         default {
             if ($Tool.Cmd -and (Test-Cmd $Tool.Cmd)) { return $true }
             $listed = winget list --id $Tool.Id --exact 2>$null | Select-String -SimpleMatch $Tool.Id
@@ -761,6 +793,30 @@ function Install-DevTools {
                     $installerPath = Join-Path $env:TEMP 'waypoint-install.ps1'
                     Invoke-WebRequest -Uri $t.Id -OutFile $installerPath
                     & $installerPath -Silent
+                }
+                'remote-config' {
+                    $content = Get-DotfilesRemoteConfig $t
+                    $destDir = Split-Path -Parent $t.Dest
+                    if ($destDir -and -not (Test-Path -LiteralPath $destDir)) {
+                        New-Item -ItemType Directory -Force -Path $destDir | Out-Null
+                    }
+                    $skip = $false
+                    $existed = Test-Path -LiteralPath $t.Dest -PathType Leaf
+                    if (-not $Force -and $existed) {
+                        $cfg = Read-Host "  $($t.Dest) は既に存在します。上書きしますか? (y/N)"
+                        if ($cfg -notmatch '^(y|yes)$') { $skip = $true }
+                    }
+                    if ($skip) {
+                        Write-Host '  スキップしました。' -ForegroundColor Gray
+                    }
+                    else {
+                        if ($existed) {
+                            $backup = "$($t.Dest).backup.$(Get-Date -Format 'yyyyMMdd-HHmmss')"
+                            Copy-Item -LiteralPath $t.Dest -Destination $backup -Force
+                            Write-Host "  既存ファイルをバックアップ: $backup" -ForegroundColor Gray
+                        }
+                        Set-Content -LiteralPath $t.Dest -Value $content -NoNewline -Encoding UTF8
+                    }
                 }
             }
             $ok = $true
