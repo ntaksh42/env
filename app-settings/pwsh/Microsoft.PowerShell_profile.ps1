@@ -710,6 +710,28 @@ function Get-DotfilesRemoteConfig {
     return $content
 }
 
+# remote-config バックエンド用: 既存ファイルとリモート内容の差分を表示する（git があれば
+# `git diff --no-index` で色付き表示、なければ Compare-Object で簡易表示）。
+function Show-DotfilesRemoteConfigDiff {
+    param([Parameter(Mandatory)]$Tool, [Parameter(Mandatory)][string]$RemoteContent)
+    if (Test-Cmd git) {
+        $tmp = Join-Path $env:TEMP "dotfiles-remote-$([guid]::NewGuid().ToString('N')).tmp"
+        try {
+            Set-Content -LiteralPath $tmp -Value $RemoteContent -NoNewline -Encoding UTF8
+            git --no-pager diff --no-index --color=always -- $Tool.Dest $tmp 2>$null
+        }
+        finally {
+            Remove-Item -LiteralPath $tmp -Force -ErrorAction SilentlyContinue
+        }
+    }
+    else {
+        Compare-Object (Get-Content -LiteralPath $Tool.Dest) ($RemoteContent -split "`r?`n") | ForEach-Object {
+            $prefix = if ($_.SideIndicator -eq '<=') { '- (ローカル) ' } else { '+ (リポジトリ)' }
+            "$prefix $($_.InputObject)"
+        }
+    }
+}
+
 # Ensure Python/pip is available; install via winget if missing. Returns $true on success.
 function Install-PythonIfMissing {
     if ((Test-Cmd python) -or (Test-Cmd pip)) { return $true }
@@ -803,6 +825,8 @@ function Install-DevTools {
                     $skip = $false
                     $existed = Test-Path -LiteralPath $t.Dest -PathType Leaf
                     if (-not $Force -and $existed) {
+                        Write-Host "  差分 (ローカル -> リポジトリ):" -ForegroundColor Cyan
+                        Show-DotfilesRemoteConfigDiff -Tool $t -RemoteContent $content | Write-Host
                         $cfg = Read-Host "  $($t.Dest) は既に存在します。上書きしますか? (y/N)"
                         if ($cfg -notmatch '^(y|yes)$') { $skip = $true }
                     }
