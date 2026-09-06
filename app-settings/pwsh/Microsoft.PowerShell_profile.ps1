@@ -782,16 +782,23 @@ function Show-DevEnv {
     } | Format-Table -AutoSize
 }
 
-# Install all missing catalog tools (idempotent; confirm unless -Force)
+# Install missing catalog tools. Script-backed tools (e.g. Waypoint) have no winget/PSGallery
+# update path, so an already-installed one is re-run here too to pull the latest version
+# instead of being skipped (idempotent; confirm unless -Force).
 function Install-DevTools {
     [CmdletBinding()]
     param([switch]$Force)
 
-    $pending = @($script:DevTools | Where-Object { -not (Test-ToolInstalled $_) })
+    $toInstall = @($script:DevTools | Where-Object { -not (Test-ToolInstalled $_) })
+    $toUpdate = @($script:DevTools | Where-Object { $_.Backend -eq 'script' -and (Test-ToolInstalled $_) })
+    $pending = @($toInstall + $toUpdate)
     if ($pending.Count -eq 0) { Write-Host 'All dev tools already installed.' -ForegroundColor Green; return }
 
-    Write-Host 'The following tools will be installed:' -ForegroundColor Cyan
-    $pending | ForEach-Object { Write-Host "  - $($_.Name) [$($_.Backend)] $($_.Id)" }
+    Write-Host 'The following tools will be installed/updated:' -ForegroundColor Cyan
+    $pending | ForEach-Object {
+        $action = if ($toUpdate -contains $_) { 'update' } else { 'install' }
+        Write-Host "  - $($_.Name) [$($_.Backend)] $($_.Id) ($action)"
+    }
     if (-not $Force) {
         $ans = Read-Host 'Proceed? (y/N)'
         if ($ans -notmatch '^(y|yes)$') { Write-Host 'Aborted.'; return }
@@ -799,7 +806,8 @@ function Install-DevTools {
 
     $results = @()
     foreach ($t in $pending) {
-        Write-Host "Installing $($t.Name)..." -ForegroundColor Green
+        $action = if ($toUpdate -contains $t) { 'Updating' } else { 'Installing' }
+        Write-Host "$action $($t.Name)..." -ForegroundColor Green
         $ok = $false
         try {
             switch ($t.Backend) {
@@ -848,7 +856,7 @@ function Install-DevTools {
         catch {
             Write-Warning "  Failed: $($_.Exception.Message)"
         }
-        $results += [PSCustomObject]@{ Tool = $t.Name; Result = if ($ok) { 'OK' } else { 'FAILED' } }
+        $results += [PSCustomObject]@{ Tool = $t.Name; Action = $action; Result = if ($ok) { 'OK' } else { 'FAILED' } }
 
         # Post-install: delta -> configure git pager (with confirmation)
         if ($ok -and $t.PostInstall -eq 'delta') {
