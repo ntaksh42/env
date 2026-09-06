@@ -1,111 +1,99 @@
-// 配置先: ~/.config/ccstatusline/settings.json
-// 反映方法: 手動コピー
 {
-  "version": 3,
+  "version": 4,
   "lines": [
     [
       {
-        "id": "1",
-        "type": "model",
-        "color": "brightCyan"
+        "id": "645e0b67-1b70-48d0-878e-0a599211ba67",
+        "type": "model"
       },
       {
-        "id": "2",
+        "id": "c76485d7-e572-4376-9943-6f4ff5145a6e",
         "type": "separator"
       },
       {
-        "id": "22066bbb-2375-4552-a1e3-7dac266e7b22",
+        "id": "b2bb4fdf-eff9-4df6-91b9-0d3f571001e3",
         "type": "thinking-effort",
-        "color": "brightCyan"
+        "color": "cyan"
       },
       {
-        "id": "1f147262-0256-4803-9346-7c34a49480ba",
+        "id": "9d872022-4654-4bf2-b37a-06d40f4755ca",
         "type": "separator"
       },
       {
-        "id": "144bcb49-a281-489a-a6d8-2d61d4825d9e",
+        "id": "42a3f49b-1f71-480e-9e9a-12662e96e1a2",
         "type": "context-percentage",
-        "color": "brightCyan"
+        "color": "cyan"
       },
       {
-        "id": "ba1fc615-417b-407b-ae79-78751f29a656",
+        "id": "eb95bf75-6c10-458e-a0c2-390be355b57e",
         "type": "separator"
       },
       {
-        "id": "786bd9ee-b0bd-46f1-b504-0611e663a947",
+        "id": "f65c9f4c-737f-43f7-9e25-1d0bc513004f",
         "type": "claude-account-email",
-        "color": "blue"
+        "color": "yellow"
       }
     ],
     [
       {
-        "id": "3a9f648c-13c6-4479-9f4d-42b6888e0d1c",
+        "id": "ea3c252d-3abc-47dd-9da6-9d40c0064ee4",
         "type": "current-working-dir"
       },
       {
-        "id": "5cd0c9b6-3bb2-4fa3-87cc-44e568351167",
+        "id": "c2303628-fbe5-4e55-b810-8067bf9188bc",
         "type": "separator"
       },
       {
-        "id": "1326036d-1c52-4f16-bce7-a1152d8c7c5f",
+        "id": "addf0260-3488-44b2-ae3c-cd5b05e0ee52",
         "type": "git-branch",
         "color": "blue"
       },
       {
-        "id": "3a73356a-b683-4ff0-ba86-6b27a94c3f4f",
+        "id": "6bbb00de-cc72-47b9-a386-0e70029e53cc",
         "type": "separator"
       },
       {
-        "id": "0c43014b-6278-4e3c-b61e-f173de6234c4",
+        "id": "9927c09f-aa15-428d-9d54-62e360bb81bc",
         "type": "git-ahead-behind",
         "color": "blue"
       },
       {
-        "id": "36213d9a-5660-4a28-aebd-41a0fa38d2b5",
+        "id": "696307db-ccb2-4b69-9ceb-02430c8477ca",
         "type": "separator"
       },
       {
-        "id": "1ce355ca-cde8-4c68-97b5-2965a94e6c2a",
+        "id": "fd99e7ad-111e-4ea7-b35b-266703703771",
         "type": "git-changes",
-        "color": "blue"
-      },
-      {
-        "id": "93028155-cb00-4de0-93e5-c832e67bc8ce",
-        "type": "separator"
-      },
-      {
-        "id": "f3051465-607a-42c9-84d7-023fbcb220ee",
-        "type": "git-review",
         "color": "blue"
       }
     ],
     [
       {
-        "id": "23038c50-52cd-4b4f-a49a-b09aa2481766",
+        "id": "9a0bf18b-b91a-4b23-8e7a-924f2144db08",
         "type": "session-usage"
       },
       {
-        "id": "be4cb958-9049-414b-a403-abfaa3655f14",
+        "id": "ede1fb1f-11af-4136-91f6-9128f1466bbc",
         "type": "separator"
       },
       {
-        "id": "2c8d3e08-55ea-406d-bd14-7fcb329fe5bc",
+        "id": "527f4dd4-39d3-4464-982a-acc74a11766f",
         "type": "reset-timer"
       },
       {
-        "id": "c46ebfdd-e08d-4838-a349-1c0a4161522c",
+        "id": "7a07cca6-6957-4392-a361-d3c83577edfc",
         "type": "separator"
       },
       {
-        "id": "07d71bc4-a8b1-4b5a-ac6c-864757b0e8a4",
+        "id": "d53e221e-4429-4f15-952e-4b781320df72",
         "type": "weekly-usage"
       },
       {
-        "id": "532dbe0a-ca3e-4aad-8f8c-ad1deeb59cf3",
+        "id": "73b023b4-c85c-49e7-8c81-5fb00c5f84f0",
         "type": "separator"
       },
       {
-        "id": "24e80e19-a75d-4b36-aae5-0db18e2b56a7",
+        "id": "37519e25-ea1b-434e-ac74-d82b3c3ada8e",
         "type": "weekly-reset-timer"
       }
     ]
@@ -121,7 +109,7 @@
   "powerline": {
     "enabled": false,
     "separators": [
-      ""
+      ""
     ],
     "separatorInvertBackground": [
       false
