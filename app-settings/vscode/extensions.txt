@@ -73,4 +73,5 @@ formulahendry.code-runner
 # --- その他 ------------------------------------------------------------
 devonray.snippet
 github.github-vscode-theme
+zhuangtongfa.material-theme
 ankitbko.vscode-pull-request-azdo
