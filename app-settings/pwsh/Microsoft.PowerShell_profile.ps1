@@ -694,7 +694,7 @@ $script:DevTools = @(
     @{ Name = 'starship.toml'; Backend = 'remote-config'; RepoPath = 'app-settings/starship/starship.toml'; Dest = (Join-Path $env:USERPROFILE '.config\starship.toml') }
     @{ Name = 'VSCode settings.json'; Backend = 'remote-config'; RepoPath = 'app-settings/vscode/settings.json'; Dest = (Join-Path $env:APPDATA 'Code\User\settings.json') }
     @{ Name = 'VSCode keybindings.json'; Backend = 'remote-config'; RepoPath = 'app-settings/vscode/keybindings.json'; Dest = (Join-Path $env:APPDATA 'Code\User\keybindings.json') }
-    @{ Name = 'ccstatusline settings.json'; Backend = 'remote-config'; RepoPath = 'app-settings/ccstatusline/settings.json'; Dest = (Join-Path $env:USERPROFILE '.config\ccstatusline\settings.json'); StripCommentLines = 2 }
+    @{ Name = 'ccstatusline settings.json'; Backend = 'remote-config'; RepoPath = 'app-settings/ccstatusline/settings.json'; Dest = (Join-Path $env:USERPROFILE '.config\ccstatusline\settings.json') }
 )
 
 # remote-config バックエンド用: リポジトリ内のファイルを raw 経由で取得する（先頭の
