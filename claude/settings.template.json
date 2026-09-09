@@ -117,16 +117,6 @@
         ]
       }
     ],
-    "Notification": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File \"{{CLAUDE_DIR}}\\claude-notification.ps1\" -Title \"Claude Code\" -Message \"Your Action Needed\""
-          }
-        ]
-      }
-    ],
     "PreToolUse": [
       {
         "matcher": "Bash",

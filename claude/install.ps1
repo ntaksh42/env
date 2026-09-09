@@ -165,10 +165,14 @@ if ($HookRegistrations.Count -gt 0) {
             $settingsObj.hooks | Add-Member -MemberType NoteProperty -Name $event -Value @()
         }
 
-        # 同じ matcher が既に存在する場合はスキップ
+        # 同じ matcher かつ同じスクリプトが既に存在する場合だけスキップする。
+        # matcher だけで判定すると、同一 matcher の別スクリプト（例: Bash の
+        # dangerous-command-guard と filter-test-output）が登録されない。
         $alreadyExists = @($settingsObj.hooks.$event | Where-Object {
-            ($null -eq $reg.matcher -and -not ($_.PSObject.Properties.Name -contains "matcher")) -or
-            ($_.PSObject.Properties.Name -contains "matcher" -and $_.matcher -eq $reg.matcher)
+            $matcherMatches =
+                ($null -eq $reg.matcher -and -not ($_.PSObject.Properties.Name -contains "matcher")) -or
+                ($_.PSObject.Properties.Name -contains "matcher" -and $_.matcher -eq $reg.matcher)
+            $matcherMatches -and @($_.hooks | Where-Object { $_.command -like "*\$($reg.file)*" }).Count -gt 0
         })
         if ($alreadyExists.Count -gt 0) {
             Write-Host "  - $($reg.file): already registered, skipping" -ForegroundColor DarkGray
