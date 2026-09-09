@@ -180,6 +180,6 @@
   {
     "key": "ctrl+shift+i",
     "command": "claude-vscode.focus",
-    "when": "!config.claudeCode.useTerminal && (editorTextFocus || terminalFocus)"
+    "when": "!config.claudeCode.useTerminal"
   }
 ]
